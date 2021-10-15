@@ -11,15 +11,15 @@ import java.util.Map;
 
 public class GroupLongPolling extends LongPolling {
 
-    public static final String HTTP_PARAM_WAIT = "wait";
+    protected static String HTTP_PARAM_WAIT = "wait";
 
-    public static final String GET_SERVER_METHOD = "groups.getLongPollServer";
+    protected static String METHOD_GET_SERVER = "groups.getLongPollServer";
 
-    public static final String PARAM_GROUP_ID = "group_id";
+    protected static String PARAM_GROUP_ID = "group_id";
 
-    public static final String JSON_UPDATE_GROUP_ID = "group_id";
-    public static final String JSON_UPDATE_OBJECT = "object";
-    public static final String JSON_UPDATE_TYPE = "type";
+    protected static String JSON_UPDATE_GROUP_ID = "group_id";
+    protected static String JSON_UPDATE_OBJECT = "object";
+    protected static String JSON_UPDATE_TYPE = "type";
 
     public static final String EVENT_MESSAGE_NEW = "message_new";
     public static final String EVENT_MESSAGE_REPLY = "message_reply";
@@ -107,7 +107,7 @@ public class GroupLongPolling extends LongPolling {
 
     @Override
     public LongPollServer getServer() throws ApiException {
-        return new VKMethod(GET_SERVER_METHOD)
+        return new VKMethod(METHOD_GET_SERVER)
                 .param(PARAM_GROUP_ID, groupId)
                 .executeAs(getActor(), LongPollServer.class);
     }

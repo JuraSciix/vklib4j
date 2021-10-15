@@ -10,11 +10,11 @@ import java.util.List;
 
 public class Error {
 
-    public static final String JSON_ERROR_CODE = "error_code";
-    public static final String JSON_ERROR_MESSAGE = "error_msg";
-    public static final String JSON_REQUEST_PARAMS = "request_params";
-    public static final String JSON_CAPTCHA_IMAGE = "captcha_img";
-    public static final String JSON_CAPTCHA_SID = "captcha_sid";
+    protected static final String JSON_ERROR_CODE = "error_code";
+    protected static final String JSON_ERROR_MESSAGE = "error_msg";
+    protected static final String JSON_REQUEST_PARAMS = "request_params";
+    protected static final String JSON_CAPTCHA_IMAGE = "captcha_img";
+    protected static final String JSON_CAPTCHA_SID = "captcha_sid";
 
     @SerializedName(JSON_ERROR_CODE)
     private int code;

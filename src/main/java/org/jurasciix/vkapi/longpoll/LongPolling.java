@@ -11,9 +11,9 @@ import java.util.Map;
 
 public abstract class LongPolling extends Thread {
 
-    public static final int FAILED_INCORRECT_TS = 1;
-    public static final int FAILED_KEY_OUTDATED = 2;
-    public static final int FAILED_DATA_LOST = 3;
+    protected static final int FAILED_INCORRECT_TS = 1;
+    protected static final int FAILED_KEY_OUTDATED = 2;
+    protected static final int FAILED_DATA_LOST = 3;
 
     private final VKActor actor;
 

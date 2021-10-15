@@ -9,17 +9,17 @@ import org.jurasciix.vkapi.util.Request;
 
 public class LongPollServer {
 
-    public static final String HTTP_SCHEME = "https";
+    protected static final String HTTP_SCHEME = "https";
 
-    public static final String HTTP_PARAM_ACT = "act";
-    public static final String HTTP_PARAM_KEY = "key";
-    public static final String HTTP_PARAM_TIMESTAMP = "ts";
+    protected static final String HTTP_PARAM_ACT = "act";
+    protected static final String HTTP_PARAM_KEY = "key";
+    protected static final String HTTP_PARAM_TIMESTAMP = "ts";
 
-    public static final String ACT = "a_check";
+    protected static final String ACT = "a_check";
 
-    public static final String JSON_SERVER = "server";
-    public static final String JSON_KEY = "key";
-    public static final String JSON_TIMESTAMP = "ts";
+    protected static final String JSON_SERVER = "server";
+    protected static final String JSON_KEY = "key";
+    protected static final String JSON_TIMESTAMP = "ts";
 
     @SerializedName(JSON_SERVER)
     private String server;

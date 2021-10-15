@@ -7,11 +7,13 @@ import org.jurasciix.vkapi.util.Request;
 
 public class VKActor {
 
+    public static final String ACTUAL_API_VERSION = "5.131";
+
     protected static final Request.Factory DEFAULT_REQUEST_FACTORY = HttpRequestFactory.getInstance();
 
     protected static final JsonManager DEFAULT_JSON_MANAGER = GsonManager.getInstance();
 
-    protected static final String DEFAULT_VERSION = "5.131";
+    protected static final String DEFAULT_VERSION = ACTUAL_API_VERSION;
 
     private final Request.Factory requestFactory;
 

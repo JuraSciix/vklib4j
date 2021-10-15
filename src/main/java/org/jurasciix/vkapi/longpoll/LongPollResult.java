@@ -8,9 +8,9 @@ import org.apache.commons.lang3.builder.ToStringBuilder;
 
 public class LongPollResult {
 
-    public static final String JSON_FAILED = "failed";
-    public static final String JSON_TIMESTAMP = "ts";
-    public static final String JSON_UPDATES = "updates";
+    protected static final String JSON_FAILED = "failed";
+    protected static final String JSON_TIMESTAMP = "ts";
+    protected static final String JSON_UPDATES = "updates";
 
     @SerializedName(JSON_FAILED)
     private Integer failed;

@@ -7,12 +7,15 @@ import org.apache.commons.lang3.StringUtils;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.util.Objects;
 
 public final class Requests {
 
-    public static final int HTTP_EXPECTED_STATUS_CODE = 200;
+    private static final int HTTP_EXPECTED_STATUS_CODE = 200;
 
     public static Request.Response execute(Request request) {
+        Objects.requireNonNull(request, "request must be not null");
+
         Request.Response resp;
 
         try {
@@ -29,27 +32,39 @@ public final class Requests {
     }
 
     public static JsonElement parseJson(JsonManager manager, Request.Response response) {
+        Objects.requireNonNull(manager, "manager must be not null");
+
         try {
-            return manager.parseJson(response.getContent());
+            return manager.parseJson(getContentOfNullable(response));
         } catch (JsonParseException e) {
             throw jsonException(e);
         }
     }
 
     public static <T> T fromJson(JsonManager manager, Request.Response response, Type type) {
+        Objects.requireNonNull(manager, "manager must be not null");
+        Objects.requireNonNull(type, "type must be not null");
+
         try {
-            return manager.fromJson(response.getContent(), type);
+            return manager.fromJson(getContentOfNullable(response), type);
         } catch (JsonSyntaxException e) {
             throw jsonException(e);
         }
     }
 
     public static <T> T fromJson(JsonManager manager, Request.Response response, Class<T> clazz) {
+        Objects.requireNonNull(manager, "manager must be not null");
+        Objects.requireNonNull(clazz, "clazz must be not null");
+
         try {
-            return manager.fromJson(response.getContent(), clazz);
+            return manager.fromJson(getContentOfNullable(response), clazz);
         } catch (JsonSyntaxException e) {
             throw jsonException(e);
         }
+    }
+
+    private static String getContentOfNullable(Request.Response response) {
+        return (response == null) ? null : response.getContent();
     }
 
     private static RequestException jsonException(JsonParseException e) {

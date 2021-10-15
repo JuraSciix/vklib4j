@@ -3,6 +3,9 @@ package org.jurasciix.vkapi;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jurasciix.vkapi.util.Request;
 import org.jurasciix.vkapi.util.Requests;
 
@@ -11,20 +14,19 @@ import java.util.*;
 
 public class VKMethod {
 
-    public static final String HTTP_API_SCHEME = "https";
-    public static final String HTTP_API_HOST = "api.vk.com";
-    public static final String HTTP_API_PATH = "method";
+    protected static final String HTTP_API_SCHEME = "https";
+    protected static final String HTTP_API_HOST = "api.vk.com";
+    protected static final String HTTP_API_PATH = "method";
 
-    public static final String PARAM_ACCESS_TOKEN = "access_token";
-    public static final String PARAM_VERSION = "v";
+    protected static final String PARAM_ACCESS_TOKEN = "access_token";
+    protected static final String PARAM_VERSION = "v";
 
-    public static final String JSON_API_ERROR = "error";
-    public static final String JSON_API_RESPONSE = "response";
+    protected static final String JSON_API_ERROR = "error";
+    protected static final String JSON_API_RESPONSE = "response";
 
     protected static void checkParam(String name) {
-        if (name == null) {
-            throw new NullPointerException("name must be not null");
-        }
+        Objects.requireNonNull(name, "name must be not null");
+
         if (name.equalsIgnoreCase(PARAM_ACCESS_TOKEN) || name.equalsIgnoreCase(PARAM_VERSION)) {
             throw new IllegalArgumentException(name);
         }
@@ -148,7 +150,7 @@ public class VKMethod {
     public VKMethod param(String name, Collection<?> values) {
         checkParam(name);
         StringJoiner joiner = new StringJoiner(",");
-        for (Object value: values) {
+        for (Object value : values) {
             joiner.add(stringOf(value));
         }
         params.put(name, joiner.toString());
@@ -158,7 +160,7 @@ public class VKMethod {
     public VKMethod param(String name, Object... values) {
         checkParam(name);
         StringJoiner joiner = new StringJoiner(",");
-        for (Object value: values) {
+        for (Object value : values) {
             joiner.add(stringOf(value));
         }
         params.put(name, joiner.toString());
@@ -168,7 +170,7 @@ public class VKMethod {
     public VKMethod param(String name, int... values) {
         checkParam(name);
         StringJoiner joiner = new StringJoiner(",");
-        for (int value: values) {
+        for (int value : values) {
             joiner.add(stringOf(value));
         }
         params.put(name, joiner.toString());
@@ -178,7 +180,7 @@ public class VKMethod {
     public VKMethod param(String name, long... values) {
         checkParam(name);
         StringJoiner joiner = new StringJoiner(",");
-        for (long value: values) {
+        for (long value : values) {
             joiner.add(stringOf(value));
         }
         params.put(name, joiner.toString());
@@ -188,7 +190,7 @@ public class VKMethod {
     public VKMethod param(String name, double... values) {
         checkParam(name);
         StringJoiner joiner = new StringJoiner(",");
-        for (double value: values) {
+        for (double value : values) {
             joiner.add(stringOf(value));
         }
         params.put(name, joiner.toString());
@@ -198,7 +200,7 @@ public class VKMethod {
     public VKMethod param(String name, float... values) {
         checkParam(name);
         StringJoiner joiner = new StringJoiner(",");
-        for (float value: values) {
+        for (float value : values) {
             joiner.add(stringOf(value));
         }
         params.put(name, joiner.toString());
@@ -208,7 +210,7 @@ public class VKMethod {
     public VKMethod param(String name, char... values) {
         checkParam(name);
         StringJoiner joiner = new StringJoiner(",");
-        for (char value: values) {
+        for (char value : values) {
             joiner.add(stringOf(value));
         }
         params.put(name, joiner.toString());
@@ -218,7 +220,7 @@ public class VKMethod {
     public VKMethod param(String name, boolean... values) {
         checkParam(name);
         StringJoiner joiner = new StringJoiner(",");
-        for (boolean value: values) {
+        for (boolean value : values) {
             joiner.add(stringOf(value));
         }
         params.put(name, joiner.toString());
@@ -307,16 +309,25 @@ public class VKMethod {
         if (this == o) return true;
         if (!(o instanceof VKMethod)) return false;
         VKMethod another = (VKMethod) o;
-        return Objects.equals(method, another.method) && Objects.equals(params, another.params);
+        EqualsBuilder builder = new EqualsBuilder();
+        builder.append(method, another.method);
+        builder.append(params, another.params);
+        return builder.isEquals();
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(method, params);
+        HashCodeBuilder builder = new HashCodeBuilder();
+        builder.append(method);
+        builder.append(params);
+        return builder.toHashCode();
     }
 
     @Override
     public String toString() {
-        return "VKMethod(method=" + method + ", params=" + params + ')';
+        ToStringBuilder builder = new ToStringBuilder(this);
+        builder.append("method", method);
+        builder.append("params", params);
+        return builder.toString();
     }
 }
