@@ -7,15 +7,23 @@ import java.lang.reflect.Type;
 
 public class GsonManager implements JsonManager {
 
-    private static GsonManager instance;
+    private static volatile GsonManager instance;
 
     public static GsonManager getInstance() {
+        GsonManager value = instance;
+        if (value == null) {
+            ensureInstance();
+            value = instance;
+        }
+        return value;
+    }
+
+    private static synchronized void ensureInstance() {
         GsonManager value = instance;
         if (value == null) {
             value = new GsonManager();
             instance = value;
         }
-        return value;
     }
 
     private final JsonParser parser;

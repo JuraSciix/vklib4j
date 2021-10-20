@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
+import org.jurasciix.vkapi.util.LombokToStringStyle;
 
 import java.util.List;
 
@@ -78,7 +78,7 @@ public class Error {
 
     @Override
     public String toString() {
-        ToStringBuilder builder = new ToStringBuilder(this, ToStringStyle.JSON_STYLE);
+        ToStringBuilder builder = new ToStringBuilder(this, LombokToStringStyle.STYLE);
         builder.append("code", code);
         builder.append("message", message);
         builder.append("requestParams", requestParams);
@@ -89,8 +89,8 @@ public class Error {
 
     public static class RequestParam {
 
-        public static final String JSON_KEY = "key";
-        public static final String JSON_VALUE = "value";
+        protected static final String JSON_KEY = "key";
+        protected static final String JSON_VALUE = "value";
 
         @SerializedName(JSON_KEY)
         private String key;
@@ -127,7 +127,7 @@ public class Error {
 
         @Override
         public String toString() {
-            ToStringBuilder builder = new ToStringBuilder(this, ToStringStyle.JSON_STYLE);
+            ToStringBuilder builder = new ToStringBuilder(this, LombokToStringStyle.STYLE);
             builder.append("key", key);
             builder.append("value", value);
             return builder.toString();

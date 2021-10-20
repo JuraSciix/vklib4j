@@ -10,22 +10,29 @@ import java.net.URI;
 
 public class HttpRequestFactory implements Request.Factory {
 
-    private static HttpRequestFactory instance;
+    private static volatile HttpRequestFactory instance;
 
     public static HttpRequestFactory getInstance() {
-        if (instance != null) {
-            return instance;
+        HttpRequestFactory value = instance;
+        if (value == null) {
+            ensureInstance();
+            value = instance;
         }
-        instance = new HttpRequestFactory();
-        return instance;
+        return value;
+    }
+
+    private static synchronized void ensureInstance() {
+        HttpRequestFactory value = instance;
+        if (value == null) {
+            value = new HttpRequestFactory();
+            instance = value;
+        }
     }
 
     private static HttpClient createHttpClient() {
-        return HttpClientBuilder.create()
-                .setDefaultRequestConfig(RequestConfig.custom()
-                        .setCookieSpec(CookieSpecs.STANDARD)
-                        .build())
-                .build();
+        HttpClientBuilder builder = HttpClientBuilder.create();
+        builder.setDefaultRequestConfig(RequestConfig.custom().setCookieSpec(CookieSpecs.STANDARD).build());
+        return builder.build();
     }
 
     private final HttpClient httpClient;

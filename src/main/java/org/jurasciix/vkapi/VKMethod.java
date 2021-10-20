@@ -6,6 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.jurasciix.vkapi.util.LombokToStringStyle;
 import org.jurasciix.vkapi.util.Request;
 import org.jurasciix.vkapi.util.Requests;
 
@@ -72,6 +73,58 @@ public class VKMethod {
             ex = e.getCause();
         }
         throw new IllegalStateException("not a valid JSON representation", ex);
+    }
+
+    public static <T> T uncheckedExecuteAs(VKActor actor, VKMethod method, Class<T> clazz) {
+        try {
+            return method.executeAs(actor, clazz);
+        } catch (ApiException e) {
+            throw apiException(e);
+        }
+    }
+
+    public static <T> T uncheckedExecuteAs(VKActor actor, VKMethod method, Type type) {
+        try {
+            return method.executeAs(actor, type);
+        } catch (ApiException e) {
+            throw apiException(e);
+        }
+    }
+
+    public static JsonElement uncheckedExecute(VKActor actor, VKMethod method) {
+        try {
+            return method.execute(actor);
+        } catch (ApiException e) {
+            throw apiException(e);
+        }
+    }
+
+    public static <T> T uncheckedExecuteRawAs(VKActor actor, VKMethod method, Class<T> clazz) {
+        try {
+            return method.executeRawAs(actor, clazz);
+        } catch (ApiException e) {
+            throw apiException(e);
+        }
+    }
+
+    public static <T> T uncheckedExecuteRawAs(VKActor actor, VKMethod method, Type type) {
+        try {
+            return method.executeRawAs(actor, type);
+        } catch (ApiException e) {
+            throw apiException(e);
+        }
+    }
+
+    public static JsonElement uncheckedExecuteRaw(VKActor actor, VKMethod method) {
+        try {
+            return method.executeRaw(actor);
+        } catch (ApiException e) {
+            throw apiException(e);
+        }
+    }
+
+    private static IllegalStateException apiException(ApiException e) {
+        return new IllegalStateException("VK API returned an error: " + e.getMessage(), e);
     }
 
     private final String method;
@@ -325,7 +378,7 @@ public class VKMethod {
 
     @Override
     public String toString() {
-        ToStringBuilder builder = new ToStringBuilder(this);
+        ToStringBuilder builder = new ToStringBuilder(this, LombokToStringStyle.STYLE);
         builder.append("method", method);
         builder.append("params", params);
         return builder.toString();

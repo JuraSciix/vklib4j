@@ -34,40 +34,56 @@ This library simplifies integration with [VK API](https://vk.com/dev/manuals) (i
 
 ## Examples
 
-#### A single API method call (send a message)
+#### Simple checked calling an API method (sending message)
 
 ```java
-VKActor actor = new VKActor("Your access token");
+VKActor actor = new VKActor(ACCESS_TOKEN);
 
 try {
-    new VKMethod("messages.send")
-            .param("chat_id", /* your chat id */ 1)
+    // https://vk.com/dev/messages.send
+    JsonElement response = new VKMethod("messages.send")
+            .param("chat_id", 1)
             .param("random_id", 0)
             .param("message", "Hello, world!")
             .execute(actor);
+    
+    System.err.println("Message has been sent, it's ID: " + response);
 } catch (ApiException e) {
-    e.printStackTrace();
+    // do anything with e.getError()
 }
+```
+
+#### Simple unchecked calling an API method (getting VK server time)
+
+```java
+VKActor actor = new VKActor(ACCESS_TOKEN);
+// https://vk.com/dev/utils.getServerTime
+JsonElement response = VKMethod.uncheckedExecute(actor, new VKMethod("utils.getServerTime"));
+System.err.println("VK server time: " + response);
 ```
 
 #### Group Long Polling
 
 ```java
-VKActor actor = new VKActor("Your access token");
-LongPolling longPolling = new GroupLongPolling(actor, /* your group id */ 1) {
+VKActor actor = new VKActor(GROUP_ACCESS_TOKEN);
+// group_id can be obtained via groups.getById (https://vk.com/dev/groups.getById)
+LongPolling longPolling = new GroupLongPolling(actor, GROUP_ID) {
     @Override
     protected void onMessageNew(int groupId, JsonObject data) {
         JsonObject message = data.getAsJsonObject("message");
-        System.out.printf("New message in peer %s: %s%n", message.get("peer_id"), message.get("text"));
+        if (message.get("peer_id").getAsInt() < 2_000_000_000) { // is not a conversation
+            System.err.printf("User %s wrote something in group %d.%n", message.get("from_id"), groupId);
+        }
     }
+    
+    @Override
+    protected void onLikeAdd(int groupId, JsonObject data) {
+        System.err.printf("User %s liked something in group %d.%n", data.get("liker_id"), groupId);
+    }
+    
     @Override
     protected void onGroupJoin(int groupId, JsonObject data) {
-        System.out.printf("User with id %s joined the group%n", data.get("user_id"));
-    }
-    @Override
-    protected void onGroupLeave(int groupId, JsonObject data) {
-        System.out.printf("User with id %s has %s the group%n", data.get("user_id"),
-                data.get("self").toString().equals("1") ? "left" : "kicked");
+        System.err.printf("User %s joiner to the group %d.%n", data.get("user_id"), groupId);
     }
 };
 longPolling.start();
@@ -77,44 +93,45 @@ longPolling.join();
 #### User Long Polling
 
 ```java
-VKActor actor = new VKActor("Your access token");
+VKActor actor = new VKActor(ACCESS_TOKEN);
 LongPolling longPolling = new UserLongPolling(actor) {
-@Override
-    protected void onFriendOnline(JsonArray data) {
-        System.out.printf("Friend with id %s became online%n", data.get(1));
-    }
-    @Override
-    protected void onFriendOffline(JsonArray data) {
-        System.out.printf("Friend with id %s became offline%n", data.get(1));
-    }
     @Override
     protected void onMessageNew(JsonArray data) {
-        System.out.printf("New message in peer %s: %s%n", data.get(3), data.get(5));
+        int flags = data.get(2).getAsInt();
+        if ((flags & (2 | 8192)) == 0) { // this is private and not an outgoing message
+            int peerId = data.get(3).getAsInt();
+            if (peerId >= 0) {
+                System.err.printf("User %d wrote something to you.%n", peerId);
+            } else {
+                System.err.printf("Group %d wrote something to you.%n", -peerId);
+            }
+        }
+    }
+    
+    @Override
+    protected void onOutputMessagesRead(JsonArray data) {
+        System.err.printf("Your messages have been read in peer %d.%n", data.get(1).getAsInt());
     }
 };
 longPolling.start();
 longPolling.join();
 ```
 
-#### Complex calling API methods (getting messages history for the last 5 minutes)
+#### Complex checked calling an API methods (getting messages history for the last 5 minutes)
 
 ```java
-class MessageItem {
-    @SerializedName("from_id") long fromId;
-    @SerializedName("text") String text;
-}
-
-VKActor actor = new VKActor("Your access token");
+VKActor actor = new VKActor(ACCESS_TOKEN);
 
 try {
+    // https://vk.com/dev/execute, https://vk.com/dev/messages.getHistory
+    // Let's imagine that MessageItem is some kind of wrapper for a message.
     MessageItem[] items = new VKMethod("execute")
-            .param("code", "var a=API.utils.getServerTime()-(60*5);var b=API.messages.getHistory({peer_id:2000000001}).items;var c=[];var d=0;while(d<b.length){if(b[d].date>a)c.push(b[d]);d=d+1;}return c;")
+            .param("code", "var a=API.utils.getServerTime()-(60*5);var b=API.messages.getHistory({peer_id:2000000312}).items;var c=[];var d=0;while(d<b.length){if(b[d].date>a)c.push(b[d]);d=d+1;}return c;")
             .executeAs(actor, MessageItem[].class);
-    for (MessageItem item: items){
-        System.out.printf("from_id: %d, text: %s%n", item.fromId, item.text);
-    }
+    
+    System.out.println(Arrays.toString(items));
 } catch (ApiException e) {
-    e.printStackTrace();
+    // do anything with e.getError()
 }
 ```
 

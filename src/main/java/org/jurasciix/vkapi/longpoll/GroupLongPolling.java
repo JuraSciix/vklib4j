@@ -11,15 +11,15 @@ import java.util.Map;
 
 public class GroupLongPolling extends LongPolling {
 
-    protected static String HTTP_PARAM_WAIT = "wait";
+    protected static final String HTTP_PARAM_WAIT = "wait";
 
-    protected static String METHOD_GET_SERVER = "groups.getLongPollServer";
+    protected static final String METHOD_GET_SERVER = "groups.getLongPollServer";
 
-    protected static String PARAM_GROUP_ID = "group_id";
+    protected static final String METHOD_PARAM_GROUP_ID = "group_id";
 
-    protected static String JSON_UPDATE_GROUP_ID = "group_id";
-    protected static String JSON_UPDATE_OBJECT = "object";
-    protected static String JSON_UPDATE_TYPE = "type";
+    protected static final String JSON_UPDATE_GROUP_ID = "group_id";
+    protected static final String JSON_UPDATE_OBJECT = "object";
+    protected static final String JSON_UPDATE_TYPE = "type";
 
     public static final String EVENT_MESSAGE_NEW = "message_new";
     public static final String EVENT_MESSAGE_REPLY = "message_reply";
@@ -107,9 +107,9 @@ public class GroupLongPolling extends LongPolling {
 
     @Override
     public LongPollServer getServer() throws ApiException {
-        return new VKMethod(METHOD_GET_SERVER)
-                .param(PARAM_GROUP_ID, groupId)
-                .executeAs(getActor(), LongPollServer.class);
+        VKMethod method = new VKMethod(METHOD_GET_SERVER);
+        method.param(METHOD_PARAM_GROUP_ID, groupId);
+        return method.executeAs(getActor(), LongPollServer.class);
     }
 
     @Override
@@ -120,60 +120,167 @@ public class GroupLongPolling extends LongPolling {
         JsonObject data = update.getAsJsonObject(JSON_UPDATE_OBJECT);
 
         switch (type) {
-            case EVENT_MESSAGE_NEW:                      onMessageNew(groupId, data);                    break;
-            case EVENT_MESSAGE_REPLY:                    onMessageReply(groupId, data);                  break;
-            case EVENT_MESSAGE_EDIT:                     onMessageEdit(groupId, data);                   break;
-            case EVENT_MESSAGE_ALLOW:                    onMessageAllow(groupId, data);                  break;
-            case EVENT_MESSAGE_DENY:                     onMessageDeny(groupId, data);                   break;
-            case EVENT_MESSAGE_TYPING:                   onMessageTyping(groupId, data);                 break;
-            case EVENT_MESSAGE_CALLBACK:                 onMessageCallback(groupId, data);               break;
-            case EVENT_PHOTO_NEW:                        onPhotoNew(groupId, data);                      break;
-            case EVENT_PHOTO_COMMENT_NEW:                onPhotoCommentNew(groupId, data);               break;
-            case EVENT_PHOTO_COMMENT_EDIT:               onPhotoCommentEdit(groupId, data);              break;
-            case EVENT_PHOTO_COMMENT_RESTORE:            onPhotoCommentRestore(groupId, data);           break;
-            case EVENT_PHOTO_COMMENT_DELETE:             onPhotoCommentDelete(groupId, data);            break;
-            case EVENT_AUDIO_NEW:                        onAudioNew(groupId, data);                      break;
-            case EVENT_VIDEO_NEW:                        onVideoNew(groupId, data);                      break;
-            case EVENT_VIDEO_COMMENT_NEW:                onVideoCommentNew(groupId, data);               break;
-            case EVENT_VIDEO_COMMENT_EDIT:               onVideoCommentEdit(groupId, data);              break;
-            case EVENT_VIDEO_COMMENT_RESTORE:            onVideoCommentRestore(groupId, data);           break;
-            case EVENT_VIDEO_COMMENT_DELETE:             onVideoCommentDelete(groupId, data);            break;
-            case EVENT_WALL_POST_NEW:                    onWallPostNew(groupId, data);                   break;
-            case EVENT_WALL_REPOST:                      onWallRepost(groupId, data);                    break;
-            case EVENT_WALL_REPLY_NEW:                   onWallReplyNew(groupId, data);                  break;
-            case EVENT_WALL_REPLY_EDIT:                  onWallReplyEdit(groupId, data);                 break;
-            case EVENT_WALL_REPLY_RESTORE:               onWallReplyRestore(groupId, data);              break;
-            case EVENT_WALL_REPLY_DELETE:                onWallReplyDelete(groupId, data);               break;
-            case EVENT_LIKE_ADD:                         onLikeAdd(groupId, data);                       break;
-            case EVENT_LIKE_REMOVE:                      onLikeRemove(groupId, data);                    break;
-            case EVENT_BOARD_POST_NEW:                   onBoardPostNew(groupId, data);                  break;
-            case EVENT_BOARD_POST_EDIT:                  onBoardPostEdit(groupId, data);                 break;
-            case EVENT_BOARD_POST_RESTORE:               onBoardPostRestore(groupId, data);              break;
-            case EVENT_BOARD_POST_DELETE:                onBoardPostDelete(groupId, data);               break;
-            case EVENT_MARKET_COMMENT_NEW:               onMarketCommentNew(groupId, data);              break;
-            case EVENT_MARKET_COMMENT_EDIT:              onMarketCommentEdit(groupId, data);             break;
-            case EVENT_MARKET_COMMENT_RESTORE:           onMarketCommentRestore(groupId, data);          break;
-            case EVENT_MARKET_COMMENT_DELETE:            onMarketCommentDelete(groupId, data);           break;
-            case EVENT_MARKET_ORDER_NEW:                 onMarketOrderNew(groupId, data);                break;
-            case EVENT_MARKET_ORDER_EDIT:                onMarketOrderEdit(groupId, data);               break;
-            case EVENT_GROUP_LEAVE:                      onGroupLeave(groupId, data);                    break;
-            case EVENT_GROUP_JOIN:                       onGroupJoin(groupId, data);                     break;
-            case EVENT_USER_BLOCK:                       onUserBlock(groupId, data);                     break;
-            case EVENT_USER_UNBLOCK:                     onUserUnblock(groupId, data);                   break;
-            case EVENT_POLL_VOTE_NEW:                    onPollVoteNew(groupId, data);                   break;
-            case EVENT_GROUP_OFFICERS_EDIT:              onGroupOfficersEdit(groupId, data);             break;
-            case EVENT_CHANGE_SETTINGS:                  onChangeSettings(groupId, data);                break;
-            case EVENT_CHANGE_PHOTO:                     onChangePhoto(groupId, data);                   break;
-            case EVENT_VKPAY_TRANSACTION:                onVkpayTransaction(groupId, data);              break;
-            case EVENT_APP_PAYLOAD:                      onAppPayload(groupId, data);                    break;
-            case EVENT_DONUT_SUBSCRIPTION_CREATE:        onDonutSubscriptionCreate(groupId, data);       break;
-            case EVENT_DONUT_SUBSCRIPTION_PROLONGED:     onDonutSubscriptionProlonged(groupId, data);    break;
-            case EVENT_DONUT_SUBSCRIPTION_EXPIRED:       onDonutSubscriptionExpired(groupId, data);      break;
-            case EVENT_DONUT_SUBSCRIPTION_CANCELLED:     onDonutSubscriptionCancelled(groupId, data);    break;
-            case EVENT_DONUT_SUBSCRIPTION_PRICE_CHANGED: onDonutSubscriptionPriceChanged(groupId, data); break;
-            case EVENT_DONUT_MONEY_WITHDRAW:             onDonutMoneyWithdraw(groupId, data);            break;
-            case EVENT_DONUT_MONEY_WITHDRAW_ERROR:       onDonutMoneyWithdrawError(groupId, data);       break;
-            default:                                     onUnknownEvent(groupId, data);
+            case EVENT_MESSAGE_NEW:
+                onMessageNew(groupId, data);
+                break;
+            case EVENT_MESSAGE_REPLY:
+                onMessageReply(groupId, data);
+                break;
+            case EVENT_MESSAGE_EDIT:
+                onMessageEdit(groupId, data);
+                break;
+            case EVENT_MESSAGE_ALLOW:
+                onMessageAllow(groupId, data);
+                break;
+            case EVENT_MESSAGE_DENY:
+                onMessageDeny(groupId, data);
+                break;
+            case EVENT_MESSAGE_TYPING:
+                onMessageTyping(groupId, data);
+                break;
+            case EVENT_MESSAGE_CALLBACK:
+                onMessageCallback(groupId, data);
+                break;
+            case EVENT_PHOTO_NEW:
+                onPhotoNew(groupId, data);
+                break;
+            case EVENT_PHOTO_COMMENT_NEW:
+                onPhotoCommentNew(groupId, data);
+                break;
+            case EVENT_PHOTO_COMMENT_EDIT:
+                onPhotoCommentEdit(groupId, data);
+                break;
+            case EVENT_PHOTO_COMMENT_RESTORE:
+                onPhotoCommentRestore(groupId, data);
+                break;
+            case EVENT_PHOTO_COMMENT_DELETE:
+                onPhotoCommentDelete(groupId, data);
+                break;
+            case EVENT_AUDIO_NEW:
+                onAudioNew(groupId, data);
+                break;
+            case EVENT_VIDEO_NEW:
+                onVideoNew(groupId, data);
+                break;
+            case EVENT_VIDEO_COMMENT_NEW:
+                onVideoCommentNew(groupId, data);
+                break;
+            case EVENT_VIDEO_COMMENT_EDIT:
+                onVideoCommentEdit(groupId, data);
+                break;
+            case EVENT_VIDEO_COMMENT_RESTORE:
+                onVideoCommentRestore(groupId, data);
+                break;
+            case EVENT_VIDEO_COMMENT_DELETE:
+                onVideoCommentDelete(groupId, data);
+                break;
+            case EVENT_WALL_POST_NEW:
+                onWallPostNew(groupId, data);
+                break;
+            case EVENT_WALL_REPOST:
+                onWallRepost(groupId, data);
+                break;
+            case EVENT_WALL_REPLY_NEW:
+                onWallReplyNew(groupId, data);
+                break;
+            case EVENT_WALL_REPLY_EDIT:
+                onWallReplyEdit(groupId, data);
+                break;
+            case EVENT_WALL_REPLY_RESTORE:
+                onWallReplyRestore(groupId, data);
+                break;
+            case EVENT_WALL_REPLY_DELETE:
+                onWallReplyDelete(groupId, data);
+                break;
+            case EVENT_LIKE_ADD:
+                onLikeAdd(groupId, data);
+                break;
+            case EVENT_LIKE_REMOVE:
+                onLikeRemove(groupId, data);
+                break;
+            case EVENT_BOARD_POST_NEW:
+                onBoardPostNew(groupId, data);
+                break;
+            case EVENT_BOARD_POST_EDIT:
+                onBoardPostEdit(groupId, data);
+                break;
+            case EVENT_BOARD_POST_RESTORE:
+                onBoardPostRestore(groupId, data);
+                break;
+            case EVENT_BOARD_POST_DELETE:
+                onBoardPostDelete(groupId, data);
+                break;
+            case EVENT_MARKET_COMMENT_NEW:
+                onMarketCommentNew(groupId, data);
+                break;
+            case EVENT_MARKET_COMMENT_EDIT:
+                onMarketCommentEdit(groupId, data);
+                break;
+            case EVENT_MARKET_COMMENT_RESTORE:
+                onMarketCommentRestore(groupId, data);
+                break;
+            case EVENT_MARKET_COMMENT_DELETE:
+                onMarketCommentDelete(groupId, data);
+                break;
+            case EVENT_MARKET_ORDER_NEW:
+                onMarketOrderNew(groupId, data);
+                break;
+            case EVENT_MARKET_ORDER_EDIT:
+                onMarketOrderEdit(groupId, data);
+                break;
+            case EVENT_GROUP_LEAVE:
+                onGroupLeave(groupId, data);
+                break;
+            case EVENT_GROUP_JOIN:
+                onGroupJoin(groupId, data);
+                break;
+            case EVENT_USER_BLOCK:
+                onUserBlock(groupId, data);
+                break;
+            case EVENT_USER_UNBLOCK:
+                onUserUnblock(groupId, data);
+                break;
+            case EVENT_POLL_VOTE_NEW:
+                onPollVoteNew(groupId, data);
+                break;
+            case EVENT_GROUP_OFFICERS_EDIT:
+                onGroupOfficersEdit(groupId, data);
+                break;
+            case EVENT_CHANGE_SETTINGS:
+                onChangeSettings(groupId, data);
+                break;
+            case EVENT_CHANGE_PHOTO:
+                onChangePhoto(groupId, data);
+                break;
+            case EVENT_VKPAY_TRANSACTION:
+                onVkpayTransaction(groupId, data);
+                break;
+            case EVENT_APP_PAYLOAD:
+                onAppPayload(groupId, data);
+                break;
+            case EVENT_DONUT_SUBSCRIPTION_CREATE:
+                onDonutSubscriptionCreate(groupId, data);
+                break;
+            case EVENT_DONUT_SUBSCRIPTION_PROLONGED:
+                onDonutSubscriptionProlonged(groupId, data);
+                break;
+            case EVENT_DONUT_SUBSCRIPTION_EXPIRED:
+                onDonutSubscriptionExpired(groupId, data);
+                break;
+            case EVENT_DONUT_SUBSCRIPTION_CANCELLED:
+                onDonutSubscriptionCancelled(groupId, data);
+                break;
+            case EVENT_DONUT_SUBSCRIPTION_PRICE_CHANGED:
+                onDonutSubscriptionPriceChanged(groupId, data);
+                break;
+            case EVENT_DONUT_MONEY_WITHDRAW:
+                onDonutMoneyWithdraw(groupId, data);
+                break;
+            case EVENT_DONUT_MONEY_WITHDRAW_ERROR:
+                onDonutMoneyWithdrawError(groupId, data);
+                break;
+            default:
+                onUnknownEvent(groupId, data);
         }
     }
 

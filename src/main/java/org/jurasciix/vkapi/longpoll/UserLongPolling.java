@@ -8,6 +8,7 @@ import org.jurasciix.vkapi.VKMethod;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 
 public class UserLongPolling extends LongPolling {
 
@@ -17,8 +18,8 @@ public class UserLongPolling extends LongPolling {
 
     protected static final String METHOD_GET_SERVER = "messages.getLongPollServer";
 
-    protected static final String PARAM_GROUP_ID = "group_id";
-    protected static final String PARAM_NEED_PTS = "need_pts";
+    protected static final String METHOD_PARAM_GROUP_ID = "group_id";
+    protected static final String METHOD_PARAM_NEED_PTS = "need_pts";
 
     protected static final int JSON_UPDATE_CODE = 0;
 
@@ -100,14 +101,14 @@ public class UserLongPolling extends LongPolling {
     }
 
     public boolean isNeedPts() {
-        return needPts != null && needPts;
+        return Optional.ofNullable(needPts).orElse(false);
     }
 
     @Override
     public LongPollServer getServer() throws ApiException {
         VKMethod method = new VKMethod(METHOD_GET_SERVER);
-        if (groupId != null) method.param(PARAM_GROUP_ID, groupId);
-        if (needPts != null) method.param(PARAM_NEED_PTS, needPts);
+        Optional.ofNullable(groupId).ifPresent(groupId -> method.param(METHOD_PARAM_GROUP_ID, groupId));
+        Optional.ofNullable(needPts).ifPresent(needPts -> method.param(METHOD_PARAM_NEED_PTS, needPts));
         return method.executeAs(getActor(), LongPollServer.class);
     }
 
@@ -117,32 +118,83 @@ public class UserLongPolling extends LongPolling {
         int code = update.get(JSON_UPDATE_CODE).getAsInt();
 
         switch (code) {
-            case EVENT_FLAGS_UPDATE:         onFlagsUpdate(update);        break;
-            case EVENT_FLAGS_SET:            onFlagsSet(update);           break;
-            case EVENT_FLAGS_RESET:          onFlagsReset(update);         break;
-            case EVENT_MESSAGE_NEW:          onMessageNew(update);         break;
-            case EVENT_MESSAGE_EDIT:         onMessageEdit(update);        break;
-            case EVENT_INPUT_MESSAGES_READ:  onInputMessagesRead(update);  break;
-            case EVENT_OUTPUT_MESSAGES_READ: onOutputMessagesRead(update); break;
-            case EVENT_FRIEND_ONLINE:        onFriendOnline(update);       break;
-            case EVENT_FRIEND_OFFLINE:       onFriendOffline(update);      break;
-            case EVENT_PEER_FLAGS_RESET:     onPeerFlagsReset(update);     break;
-            case EVENT_PEER_FLAGS_UPDATE:    onPeerFlagsUpdate(update);    break;
-            case EVENT_PEER_FLAGS_SET:       onPeerFlagsSet(update);       break;
-            case EVENT_MESSAGES_DELETE:      onMessagesDelete(update);     break;
-            case EVENT_MESSAGES_RESTORE:     onMessagesRestore(update);    break;
-            case EVENT_MAJOR_ID_UPDATE:      onMajorIdUpdate(update);      break;
-            case EVENT_MINOR_ID_UPDATE:      onMinorIdUpdate(update);      break;
-            case EVENT_CHAT_PARAM_UPDATE:    onChatParamUpdate(update);    break;
-            case EVENT_CHAT_INFO_UPDATE:     onChatInfoUpdate(update);     break;
-            case EVENT_USER_TYPING:          onUserTyping(update);         break;
-            case EVENT_PEER_USER_TYPING:     onPeerUserTyping(update);     break;
-            case EVENT_PEER_USERS_TYPING:    onPeerUsersTyping(update);    break;
-            case EVENT_PEER_USERS_VOICING:   onPeerUsersVoicing(update);   break;
-            case EVENT_USER_VOICING:         onUserVoicing(update);        break;
-            case EVENT_COUNTER_UPDATE:       onCounterUpdate(update);      break;
-            case EVENT_NOTIFICATIONS_EDIT:   onNotificationsEdit(update);  break;
-            default:                         onUnknownEvent(update);
+            case EVENT_FLAGS_UPDATE:
+                onFlagsUpdate(update);
+                break;
+            case EVENT_FLAGS_SET:
+                onFlagsSet(update);
+                break;
+            case EVENT_FLAGS_RESET:
+                onFlagsReset(update);
+                break;
+            case EVENT_MESSAGE_NEW:
+                onMessageNew(update);
+                break;
+            case EVENT_MESSAGE_EDIT:
+                onMessageEdit(update);
+                break;
+            case EVENT_INPUT_MESSAGES_READ:
+                onInputMessagesRead(update);
+                break;
+            case EVENT_OUTPUT_MESSAGES_READ:
+                onOutputMessagesRead(update);
+                break;
+            case EVENT_FRIEND_ONLINE:
+                onFriendOnline(update);
+                break;
+            case EVENT_FRIEND_OFFLINE:
+                onFriendOffline(update);
+                break;
+            case EVENT_PEER_FLAGS_RESET:
+                onPeerFlagsReset(update);
+                break;
+            case EVENT_PEER_FLAGS_UPDATE:
+                onPeerFlagsUpdate(update);
+                break;
+            case EVENT_PEER_FLAGS_SET:
+                onPeerFlagsSet(update);
+                break;
+            case EVENT_MESSAGES_DELETE:
+                onMessagesDelete(update);
+                break;
+            case EVENT_MESSAGES_RESTORE:
+                onMessagesRestore(update);
+                break;
+            case EVENT_MAJOR_ID_UPDATE:
+                onMajorIdUpdate(update);
+                break;
+            case EVENT_MINOR_ID_UPDATE:
+                onMinorIdUpdate(update);
+                break;
+            case EVENT_CHAT_PARAM_UPDATE:
+                onChatParamUpdate(update);
+                break;
+            case EVENT_CHAT_INFO_UPDATE:
+                onChatInfoUpdate(update);
+                break;
+            case EVENT_USER_TYPING:
+                onUserTyping(update);
+                break;
+            case EVENT_PEER_USER_TYPING:
+                onPeerUserTyping(update);
+                break;
+            case EVENT_PEER_USERS_TYPING:
+                onPeerUsersTyping(update);
+                break;
+            case EVENT_PEER_USERS_VOICING:
+                onPeerUsersVoicing(update);
+                break;
+            case EVENT_USER_VOICING:
+                onUserVoicing(update);
+                break;
+            case EVENT_COUNTER_UPDATE:
+                onCounterUpdate(update);
+                break;
+            case EVENT_NOTIFICATIONS_EDIT:
+                onNotificationsEdit(update);
+                break;
+            default:
+                onUnknownEvent(update);
         }
     }
 

@@ -8,12 +8,12 @@ import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.client.utils.URIBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -133,7 +133,7 @@ public class HttpRequest implements Request {
 
     private void putParameters(Map<String, String> parameters) {
         if (parameters != null && !parameters.isEmpty()) {
-            for (Map.Entry<String, String> entry: parameters.entrySet()) {
+            for (Map.Entry<String, String> entry : parameters.entrySet()) {
                 builder.addParameter(entry.getKey(), entry.getValue());
             }
         }
@@ -147,7 +147,7 @@ public class HttpRequest implements Request {
         }
         Map<String, String> parameters = new LinkedHashMap<>(params.size());
 
-        for (NameValuePair param: params) {
+        for (NameValuePair param : params) {
             parameters.put(param.getName(), param.getValue());
         }
         return parameters;
@@ -165,15 +165,14 @@ public class HttpRequest implements Request {
     }
 
     @Override
-    public Response execute() throws IOException {
-        URI uri;
+    public URI toURI() {
+        return URI.create(builder.toString());
+    }
 
-        try {
-            uri = builder.build();
-        } catch (URISyntaxException e) {
-            throw new IllegalStateException(e.getMessage(), e);
-        }
-        HttpResponse resp = httpClient.execute(new HttpGet(uri));
+    @Override
+    public Response execute() throws IOException {
+        HttpUriRequest request = new HttpGet(toURI());
+        HttpResponse resp = httpClient.execute(request);
 
         try (InputStream content = resp.getEntity().getContent()) {
             return new SimpleResponse(resp.getStatusLine().getStatusCode(), IOUtils.toString(content));
@@ -246,7 +245,7 @@ public class HttpRequest implements Request {
 
         @Override
         public String toString() {
-            ToStringBuilder builder = new ToStringBuilder(this);
+            ToStringBuilder builder = new ToStringBuilder(this, LombokToStringStyle.STYLE);
             builder.append("statusCode", statusCode);
             builder.append("content", content);
             return builder.toString();

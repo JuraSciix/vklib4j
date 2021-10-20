@@ -14,21 +14,20 @@ public final class Requests {
     private static final int HTTP_EXPECTED_STATUS_CODE = 200;
 
     public static Request.Response execute(Request request) {
+        Request.Response response;
         Objects.requireNonNull(request, "request must be not null");
 
-        Request.Response resp;
-
         try {
-            resp = request.execute();
+            response = request.execute();
         } catch (IOException e) {
             throw new RequestException("I/O troubles", e);
         }
 
-        if (resp.getStatusCode() != HTTP_EXPECTED_STATUS_CODE) {
-            throw new RequestException("server returned an unexpected status code: " + resp.getStatusCode());
+        if (response.getStatusCode() != HTTP_EXPECTED_STATUS_CODE) {
+            throw new RequestException("returned an unexpected status code: " + response.getStatusCode());
         }
 
-        return resp;
+        return response;
     }
 
     public static JsonElement parseJson(JsonManager manager, Request.Response response) {
@@ -72,7 +71,7 @@ public final class Requests {
         if (e.getCause() != null && StringUtils.isEmpty(StringUtils.trim(e.getMessage()))) {
             ex = e.getCause();
         }
-        throw new RequestException("server returned not a valid JSON", ex);
+        throw new RequestException("returned not a valid JSON", ex);
     }
 
     private Requests() {

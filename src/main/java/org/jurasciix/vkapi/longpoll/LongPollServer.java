@@ -5,6 +5,7 @@ import com.google.gson.annotations.SerializedName;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.jurasciix.vkapi.util.LombokToStringStyle;
 import org.jurasciix.vkapi.util.Request;
 
 public class LongPollServer {
@@ -96,7 +97,7 @@ public class LongPollServer {
 
     @Override
     public String toString() {
-        ToStringBuilder builder = new ToStringBuilder(this);
+        ToStringBuilder builder = new ToStringBuilder(this, LombokToStringStyle.STYLE);
         builder.append("server", server);
         builder.append("key", key);
         builder.append("timestamp", timestamp);

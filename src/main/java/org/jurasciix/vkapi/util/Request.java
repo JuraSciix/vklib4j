@@ -62,5 +62,7 @@ public interface Request {
 
     String getFragment();
 
+    URI toURI();
+
     Response execute() throws IOException;
 }
