@@ -3,118 +3,152 @@ package org.jurasciix.vkapi.util;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.client.utils.URIBuilder;
+import org.apache.http.entity.ContentType;
+import org.apache.http.entity.FileEntity;
+import org.apache.http.entity.StringEntity;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class HttpRequest implements Request {
 
-    private final URIBuilder builder;
+    private static final Object PRESENT = new Object();
 
     private final HttpClient httpClient;
 
-    protected HttpRequest(URIBuilder builder, HttpClient httpClient) {
-        this.builder = builder;
-        this.httpClient = httpClient;
-    }
+    private final RequestBuilder requestBuilder;
 
-    protected URIBuilder getBuilder() {
-        return builder;
+    private final URIBuilder uriBuilder;
+
+    // I don't want to create a HashSet and wrap it into synchronizedSet, I think it's pretty inefficient.
+    private final Map<HttpUriRequest, Object> activeRequests = new ConcurrentHashMap<>();
+
+    protected HttpRequest(HttpClient httpClient, RequestBuilder requestBuilder, URIBuilder uriBuilder) {
+        this.httpClient = httpClient;
+        this.requestBuilder = requestBuilder;
+        this.uriBuilder = uriBuilder;
     }
 
     protected HttpClient getHttpClient() {
         return httpClient;
     }
 
+    protected RequestBuilder getRequestBuilder() {
+        return requestBuilder;
+    }
+
+    protected URIBuilder getUriBuilder() {
+        return uriBuilder;
+    }
+
+    @Override
+    public String getMethod() {
+        return requestBuilder.getMethod();
+    }
+
     @Override
     public Request setCharset(Charset charset) {
-        builder.setCharset(charset);
+        uriBuilder.setCharset(charset);
         return this;
     }
 
     @Override
     public Charset getCharset() {
-        return builder.getCharset();
+        return uriBuilder.getCharset();
     }
 
     @Override
     public Request setScheme(String scheme) {
-        builder.setScheme(scheme);
+        uriBuilder.setScheme(scheme);
         return this;
     }
 
     @Override
     public String getScheme() {
-        return builder.getScheme();
+        return uriBuilder.getScheme();
     }
 
     @Override
     public Request setUserInfo(String userInfo) {
-        builder.setUserInfo(userInfo);
+        uriBuilder.setUserInfo(userInfo);
         return this;
     }
 
     @Override
     public String getUserInfo() {
-        return builder.getUserInfo();
+        return uriBuilder.getUserInfo();
     }
 
     @Override
     public Request setHost(String host) {
-        builder.setHost(host);
+        uriBuilder.setHost(host);
         return this;
     }
 
     @Override
     public String getHost() {
-        return builder.getHost();
+        return uriBuilder.getHost();
     }
 
     @Override
-    public Request setPath(String path) {
-        builder.setPath(path);
+    public Request setPort(int port) {
+        uriBuilder.setPort(port);
         return this;
     }
 
     @Override
-    public String getPath() {
-        return builder.getPath();
+    public int getPort() {
+        return uriBuilder.getPort();
+    }
+
+    @Override
+    public Request setPath(String path) {
+        uriBuilder.setPath(path);
+        return this;
     }
 
     @Override
     public Request setPathSegments(String... pathSegments) {
-        builder.setPathSegments(pathSegments);
+        uriBuilder.setPathSegments(pathSegments);
         return this;
     }
 
     @Override
     public Request setPathSegments(List<String> pathSegments) {
-        builder.setPathSegments(pathSegments);
+        uriBuilder.setPathSegments(pathSegments);
         return this;
     }
 
     @Override
+    public String getPath() {
+        return uriBuilder.getPath();
+    }
+
+    @Override
     public Request addParameter(String name, String value) {
-        builder.addParameter(name, value);
+        uriBuilder.addParameter(name, value);
         return this;
     }
 
     @Override
     public Request setParameter(String name, String value) {
-        builder.setParameter(name, value);
+        uriBuilder.setParameter(name, value);
         return this;
     }
 
@@ -126,97 +160,192 @@ public class HttpRequest implements Request {
 
     @Override
     public Request setParameters(Map<String, String> parameters) {
-        builder.clearParameters();
+        uriBuilder.clearParameters();
         putParameters(parameters);
         return this;
     }
 
     private void putParameters(Map<String, String> parameters) {
-        if (parameters != null && !parameters.isEmpty()) {
-            for (Map.Entry<String, String> entry : parameters.entrySet()) {
-                builder.addParameter(entry.getKey(), entry.getValue());
-            }
+        if ((parameters == null) || parameters.isEmpty()) {
+            return;
+        }
+        for (Map.Entry<String, String> parameterEntry : parameters.entrySet()) {
+            uriBuilder.addParameter(parameterEntry.getKey(), parameterEntry.getValue());
         }
     }
 
     @Override
     public Map<String, String> getParameters() {
-        List<NameValuePair> params = builder.getQueryParams();
-        if (params.isEmpty()) {
+        List<NameValuePair> queryParams = uriBuilder.getQueryParams();
+
+        if (queryParams.isEmpty()) {
             return Collections.emptyMap();
         }
-        Map<String, String> parameters = new LinkedHashMap<>(params.size());
+        Map<String, String> parameters = new LinkedHashMap<>(queryParams.size());
 
-        for (NameValuePair param : params) {
-            parameters.put(param.getName(), param.getValue());
+        for (NameValuePair queryParam : queryParams) {
+            parameters.put(queryParam.getName(), queryParam.getValue());
         }
         return parameters;
     }
 
     @Override
     public Request setFragment(String fragment) {
-        builder.setFragment(fragment);
+        uriBuilder.setFragment(fragment);
         return this;
     }
 
     @Override
     public String getFragment() {
-        return builder.getFragment();
+        return uriBuilder.getFragment();
     }
 
     @Override
-    public URI toURI() {
-        return URI.create(builder.toString());
+    public Request addHeader(String name, String value) {
+        requestBuilder.addHeader(name, value);
+        return this;
+    }
+
+    @Override
+    public Request setHeader(String name, String value) {
+        requestBuilder.setHeader(name, value);
+        return this;
+    }
+
+    @Override
+    public Request removeHeaders(String name) {
+        requestBuilder.removeHeaders(name);
+        return this;
+    }
+
+    @Override
+    public Request setEntityString(String string) {
+        requestBuilder.setEntity(new StringEntity(string, ContentType.DEFAULT_TEXT)); // damn checked exception
+        return this;
+    }
+
+    @Override
+    public Request setEntityString(String string, String mimeType) {
+        requestBuilder.setEntity(new StringEntity(string, ContentType.create(mimeType)));
+        return this;
+    }
+
+    @Override
+    public Request setEntityString(String string, String mimeType, Charset charset) {
+        requestBuilder.setEntity(new StringEntity(string, ContentType.create(mimeType, charset)));
+        return this;
+    }
+
+    @Override
+    public Request setEntityFile(File file) {
+        requestBuilder.setEntity(new FileEntity(file));
+        return this;
+    }
+
+    @Override
+    public Request setEntityFile(File file, String mimeType) {
+        requestBuilder.setEntity(new FileEntity(file, ContentType.create(mimeType)));
+        return this;
+    }
+
+    @Override
+    public Request setEntityFile(File file, String mimeType, Charset charset) {
+        requestBuilder.setEntity(new FileEntity(file, ContentType.create(mimeType, charset)));
+        return this;
     }
 
     @Override
     public Response execute() throws IOException {
-        HttpUriRequest request = new HttpGet(toURI());
-        HttpResponse resp = httpClient.execute(request);
-
-        try (InputStream content = resp.getEntity().getContent()) {
-            return new SimpleResponse(resp.getStatusLine().getStatusCode(), IOUtils.toString(content));
+        RequestBuilder builder = requestBuilder;
+        builder.setUri(toUri(uriBuilder));
+        HttpUriRequest request = builder.build();
+        HttpResponse response;
+        try {
+            activeRequests.put(request, PRESENT);
+            response = httpClient.execute(request);
+        } finally {
+            activeRequests.remove(request);
         }
+        int statusCode = response.getStatusLine().getStatusCode();
+        String contentType = getContentType(response);
+        String content;
+        try (InputStream contentStream = response.getEntity().getContent()) {
+            content = IOUtils.toString(contentStream);
+        }
+        return new BasicResponse(statusCode, contentType, content);
+    }
+
+    @Override
+    public void abort() {
+        for (HttpUriRequest request : activeRequests.keySet()) {
+            request.abort();
+        }
+    }
+
+    @Override
+    public URI toUri() {
+        return toUri(uriBuilder);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof HttpRequest)) return false;
+        if (null == o || getClass() != o.getClass()) return false;
         HttpRequest another = (HttpRequest) o;
-        EqualsBuilder builder = new EqualsBuilder();
-        builder.append(builder, another.builder);
-        builder.append(httpClient, another.httpClient);
-        return builder.isEquals();
+        return new EqualsBuilder()
+                .append(httpClient, another.httpClient)
+                .append(requestBuilder, another.requestBuilder)
+                .append(uriBuilder, another.uriBuilder).isEquals();
     }
 
     @Override
     public int hashCode() {
-        HashCodeBuilder builder = new HashCodeBuilder();
-        builder.append(builder);
-        builder.append(httpClient);
-        return builder.toHashCode();
+        return new HashCodeBuilder()
+                .append(httpClient)
+                .append(requestBuilder)
+                .append(uriBuilder).toHashCode();
     }
 
     @Override
     public String toString() {
-        return builder.toString();
+        return uriBuilder.toString();
     }
 
-    protected static class SimpleResponse implements Response {
+    private static URI toUri(URIBuilder builder) {
+        try {
+            return builder.build();
+        } catch (URISyntaxException e) { // should never happen
+            throw new IllegalStateException(e);
+        }
+    }
+
+    private static String getContentType(HttpResponse response) {
+        Header header = response.getEntity().getContentType();
+        return (header == null) ? "" : header.getValue();
+    }
+
+    public static class BasicResponse implements Response {
 
         private final int statusCode;
 
+        private final String contentType;
+
         private final String content;
 
-        protected SimpleResponse(int statusCode, String content) {
+        protected BasicResponse(int statusCode, String contentType, String content) {
             this.statusCode = statusCode;
+            this.contentType = contentType;
             this.content = content;
         }
 
         @Override
         public int getStatusCode() {
             return statusCode;
+        }
+
+        @Override
+        public String getContentType() {
+            return contentType;
         }
 
         @Override
@@ -227,28 +356,28 @@ public class HttpRequest implements Request {
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
-            if (!(o instanceof SimpleResponse)) return false;
-            SimpleResponse another = (SimpleResponse) o;
-            EqualsBuilder builder = new EqualsBuilder();
-            builder.append(statusCode, another.statusCode);
-            builder.append(content, another.content);
-            return builder.isEquals();
+            if (null == o || getClass() != o.getClass()) return false;
+            BasicResponse another = (BasicResponse) o;
+            return new EqualsBuilder()
+                    .append(statusCode, another.statusCode)
+                    .append(contentType, another.contentType)
+                    .append(content, another.content).isEquals();
         }
 
         @Override
         public int hashCode() {
-            HashCodeBuilder builder = new HashCodeBuilder();
-            builder.append(statusCode);
-            builder.append(content);
-            return builder.toHashCode();
+            return new HashCodeBuilder()
+                    .append(statusCode)
+                    .append(contentType)
+                    .append(content).toHashCode();
         }
 
         @Override
         public String toString() {
-            ToStringBuilder builder = new ToStringBuilder(this, LombokToStringStyle.STYLE);
-            builder.append("statusCode", statusCode);
-            builder.append("content", content);
-            return builder.toString();
+            return LombokToStringStyle.getToStringBuilder(this)
+                    .append("statusCode", statusCode)
+                    .append("contentType", contentType)
+                    .append("content", content).toString();
         }
     }
 }

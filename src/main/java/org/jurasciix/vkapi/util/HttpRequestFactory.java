@@ -3,10 +3,12 @@ package org.jurasciix.vkapi.util;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;
 import org.apache.http.client.config.RequestConfig;
+import org.apache.http.client.methods.RequestBuilder;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.HttpClientBuilder;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 
 public class HttpRequestFactory implements Request.Factory {
 
@@ -50,17 +52,65 @@ public class HttpRequestFactory implements Request.Factory {
     }
 
     @Override
-    public Request newRequest() {
-        return new HttpRequest(new URIBuilder(), httpClient);
+    public Request newGet() {
+        return new HttpRequest(httpClient, RequestBuilder.get(), new URIBuilder());
     }
 
     @Override
-    public Request newRequest(String uri) {
-        return new HttpRequest(new URIBuilder(URI.create(uri)), httpClient);
+    public Request newGet(String uri) {
+        URIBuilder uriBuilder;
+        try {
+            uriBuilder = new URIBuilder(uri);
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("uri", e);
+        }
+        return new HttpRequest(httpClient, RequestBuilder.get(), uriBuilder);
     }
 
     @Override
-    public Request newRequest(URI uri) {
-        return new HttpRequest(new URIBuilder(uri), httpClient);
+    public Request newGet(URI uri) {
+        return new HttpRequest(httpClient, RequestBuilder.get(), new URIBuilder(uri));
+    }
+
+    @Override
+    public Request newPost() {
+        return new HttpRequest(httpClient, RequestBuilder.post(), new URIBuilder());
+    }
+
+    @Override
+    public Request newPost(String uri) {
+        URIBuilder uriBuilder;
+        try {
+            uriBuilder = new URIBuilder(uri);
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("uri", e);
+        }
+        return new HttpRequest(httpClient, RequestBuilder.post(), uriBuilder);
+    }
+
+    @Override
+    public Request newPost(URI uri) {
+        return new HttpRequest(httpClient, RequestBuilder.post(), new URIBuilder(uri));
+    }
+
+    @Override
+    public Request newRequest(String method) {
+        return new HttpRequest(httpClient, RequestBuilder.create(method), new URIBuilder());
+    }
+
+    @Override
+    public Request newRequest(String method, String uri) {
+        URIBuilder uriBuilder;
+        try {
+            uriBuilder = new URIBuilder(uri);
+        } catch (URISyntaxException e) {
+            throw new IllegalArgumentException("uri", e);
+        }
+        return new HttpRequest(httpClient, RequestBuilder.create(method), uriBuilder);
+    }
+
+    @Override
+    public Request newRequest(String method, URI uri) {
+        return new HttpRequest(httpClient, RequestBuilder.create(method), new URIBuilder(uri));
     }
 }

@@ -5,7 +5,7 @@ import com.google.gson.JsonSyntaxException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.jurasciix.vkapi.util.JsonManager;
 import org.jurasciix.vkapi.util.LombokToStringStyle;
 import org.jurasciix.vkapi.util.Request;
 import org.jurasciix.vkapi.util.Requests;
@@ -14,6 +14,12 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 public class VKMethod {
+
+    @FunctionalInterface
+    public interface Action<T> {
+
+        T execute() throws ApiException;
+    }
 
     protected static final String HTTP_API_SCHEME = "https";
     protected static final String HTTP_API_HOST = "api.vk.com";
@@ -25,8 +31,10 @@ public class VKMethod {
     protected static final String JSON_API_ERROR = "error";
     protected static final String JSON_API_RESPONSE = "response";
 
+    protected static final int API_ERROR_INTERNAL_SERVER_ERROR_CODE = 10;
+
     protected static void checkParam(String name) {
-        Objects.requireNonNull(name, "name must be not null");
+        Objects.requireNonNull(name, "name");
 
         if (name.equalsIgnoreCase(PARAM_ACCESS_TOKEN) || name.equalsIgnoreCase(PARAM_VERSION)) {
             throw new IllegalArgumentException(name);
@@ -34,13 +42,29 @@ public class VKMethod {
     }
 
     protected static String stringOf(Object value) {
-        if (value == null) {
-            return null;
+        if (value != null) {
+            Class<?> clazz = value.getClass();
+
+            if (clazz == Integer.class) {
+                return stringOf((int) value);
+            }
+            if (clazz == Long.class) {
+                return stringOf((long) value);
+            }
+            if (clazz == Double.class) {
+                return stringOf((double) value);
+            }
+            if (clazz == Float.class) {
+                return stringOf((float) value);
+            }
+            if (clazz == Character.class) {
+                return stringOf((char) value);
+            }
+            if (clazz == Boolean.class) {
+                return stringOf((boolean) value);
+            }
         }
-        if (value.getClass() == Boolean.class) {
-            return stringOf((boolean) value);
-        }
-        return value.toString();
+        return String.valueOf(value);
     }
 
     protected static String stringOf(int value) {
@@ -67,64 +91,63 @@ public class VKMethod {
         return value ? "1" : "0";
     }
 
-    private static IllegalStateException jsonException(JsonSyntaxException e) {
-        Throwable ex = e;
-        if (ex.getCause() != null && StringUtils.isBlank(StringUtils.trim(e.getMessage()))) {
-            ex = e.getCause();
-        }
-        throw new IllegalStateException("not a valid JSON representation", ex);
+    public static JsonElement performAction(VKMethod method, VKActor actor) {
+        return performAction(() -> method.execute(actor));
     }
 
-    public static <T> T uncheckedExecuteAs(VKActor actor, VKMethod method, Class<T> clazz) {
+    public static <T> T performActionAs(VKMethod method, VKActor actor, Type type) {
+        return performAction(() -> method.executeAs(actor, type));
+    }
+
+    public static <T> T performActionAs(VKMethod method, VKActor actor, Class<T> clazz) {
+        return performAction(() -> method.executeAs(actor, clazz));
+    }
+
+    public static JsonElement performActionRaw(VKMethod method, VKActor actor) {
+        return performAction(() -> method.executeRaw(actor));
+    }
+
+    public static <T> T performActionRawAs(VKMethod method, VKActor actor, Type type) {
+        return performAction(() -> method.executeRawAs(actor, type));
+    }
+
+    public static <T> T performActionRawAs(VKMethod method, VKActor actor, Class<T> clazz) {
+        return performAction(() -> method.executeRawAs(actor, clazz));
+    }
+
+    public static <T> T performAction(Action<T> action) {
         try {
-            return method.executeAs(actor, clazz);
+            return action.execute();
         } catch (ApiException e) {
-            throw apiException(e);
+            if (e.getErrorCode() != API_ERROR_INTERNAL_SERVER_ERROR_CODE) {
+                throw wrapApiException(e);
+            }
+            try {
+                return action.execute();
+            } catch (ApiException e1) {
+                throw wrapApiException(e1);
+            }
         }
     }
 
-    public static <T> T uncheckedExecuteAs(VKActor actor, VKMethod method, Type type) {
-        try {
-            return method.executeAs(actor, type);
-        } catch (ApiException e) {
-            throw apiException(e);
-        }
-    }
-
-    public static JsonElement uncheckedExecute(VKActor actor, VKMethod method) {
-        try {
-            return method.execute(actor);
-        } catch (ApiException e) {
-            throw apiException(e);
-        }
-    }
-
-    public static <T> T uncheckedExecuteRawAs(VKActor actor, VKMethod method, Class<T> clazz) {
-        try {
-            return method.executeRawAs(actor, clazz);
-        } catch (ApiException e) {
-            throw apiException(e);
-        }
-    }
-
-    public static <T> T uncheckedExecuteRawAs(VKActor actor, VKMethod method, Type type) {
-        try {
-            return method.executeRawAs(actor, type);
-        } catch (ApiException e) {
-            throw apiException(e);
-        }
-    }
-
-    public static JsonElement uncheckedExecuteRaw(VKActor actor, VKMethod method) {
-        try {
-            return method.executeRaw(actor);
-        } catch (ApiException e) {
-            throw apiException(e);
-        }
-    }
-
-    private static IllegalStateException apiException(ApiException e) {
+    private static IllegalStateException wrapApiException(ApiException e) {
         return new IllegalStateException("VK API returned an error: " + e.getMessage(), e);
+    }
+
+    private static Error parseApiErrorJSON(JsonManager jsonManager, JsonElement json) {
+        try {
+            return jsonManager.fromJson(json, Error.class);
+        } catch (JsonSyntaxException e) {
+            throw wrapJsonException(e);
+        }
+    }
+
+    private static IllegalStateException wrapJsonException(JsonSyntaxException e) {
+        Throwable cause = e;
+        if (cause.getCause() != null && StringUtils.trimToNull(e.getMessage()) == null) {
+            cause = e.getCause();
+        }
+        return new IllegalStateException("incorrect JSON representation", cause);
     }
 
     private final String method;
@@ -200,7 +223,7 @@ public class VKMethod {
         return this;
     }
 
-    public VKMethod param(String name, Collection<?> values) {
+    public VKMethod param(String name, Iterable<?> values) {
         checkParam(name);
         StringJoiner joiner = new StringJoiner(",");
         for (Object value : values) {
@@ -280,26 +303,6 @@ public class VKMethod {
         return this;
     }
 
-    public <T> T executeAs(VKActor actor, Class<T> clazz) throws ApiException {
-        JsonElement response = execute(actor);
-
-        try {
-            return actor.getJsonManager().fromJson(response, clazz);
-        } catch (JsonSyntaxException e) {
-            throw jsonException(e);
-        }
-    }
-
-    public <T> T executeAs(VKActor actor, Type type) throws ApiException {
-        JsonElement response = execute(actor);
-
-        try {
-            return actor.getJsonManager().fromJson(response, type);
-        } catch (JsonSyntaxException e) {
-            throw jsonException(e);
-        }
-    }
-
     public JsonElement execute(VKActor actor) throws ApiException {
         JsonElement json = executeRaw(actor);
 
@@ -309,14 +312,35 @@ public class VKMethod {
         return json;
     }
 
-    public <T> T executeRawAs(VKActor actor, Class<T> clazz) throws ApiException {
-        JsonElement response = executeRaw(actor);
+    public <T> T executeAs(VKActor actor, Type type) throws ApiException {
+        JsonElement response = execute(actor);
+
+        try {
+            return actor.getJsonManager().fromJson(response, type);
+        } catch (JsonSyntaxException e) {
+            throw wrapJsonException(e);
+        }
+    }
+
+    public <T> T executeAs(VKActor actor, Class<T> clazz) throws ApiException {
+        JsonElement response = execute(actor);
 
         try {
             return actor.getJsonManager().fromJson(response, clazz);
         } catch (JsonSyntaxException e) {
-            throw jsonException(e);
+            throw wrapJsonException(e);
         }
+    }
+
+    public JsonElement executeRaw(VKActor actor) throws ApiException {
+        Request.Response response = doRequest(actor);
+        JsonElement json = Requests.parseJson(actor.getJsonManager(), response);
+
+        if (json.isJsonObject() && json.getAsJsonObject().has(JSON_API_ERROR)) {
+            Error error = parseApiErrorJSON(actor.getJsonManager(), json.getAsJsonObject().get(JSON_API_ERROR));
+            throw new ApiException(error);
+        }
+        return json;
     }
 
     public <T> T executeRawAs(VKActor actor, Type type) throws ApiException {
@@ -325,62 +349,53 @@ public class VKMethod {
         try {
             return actor.getJsonManager().fromJson(response, type);
         } catch (JsonSyntaxException e) {
-            throw jsonException(e);
+            throw wrapJsonException(e);
         }
     }
 
-    public JsonElement executeRaw(VKActor actor) throws ApiException {
-        Request.Response response = requestMethod(actor);
-        JsonElement json = Requests.parseJson(actor.getJsonManager(), response);
+    public <T> T executeRawAs(VKActor actor, Class<T> clazz) throws ApiException {
+        JsonElement response = executeRaw(actor);
 
-        if (json.isJsonObject() && json.getAsJsonObject().has(JSON_API_ERROR)) {
-            Error error;
-
-            try {
-                error = actor.getJsonManager().fromJson(json.getAsJsonObject().get(JSON_API_ERROR), Error.class);
-            } catch (JsonSyntaxException e) {
-                throw new IllegalStateException(e);
-            }
-            throw new ApiException(error);
+        try {
+            return actor.getJsonManager().fromJson(response, clazz);
+        } catch (JsonSyntaxException e) {
+            throw wrapJsonException(e);
         }
-        return json;
     }
 
-    protected Request.Response requestMethod(VKActor actor) {
-        Request request = actor.getRequestFactory().newRequest();
+    protected Request.Response doRequest(VKActor actor) {
+        Objects.requireNonNull(actor, "actor");
+        Request request = actor.getRequestFactory().newGet();
         request.setScheme(HTTP_API_SCHEME);
         request.setHost(HTTP_API_HOST);
         request.setPathSegments(HTTP_API_PATH, method);
         request.addParameter(PARAM_ACCESS_TOKEN, actor.getAccessToken());
         request.addParameter(PARAM_VERSION, actor.getVersion());
         request.addParameters(params);
-        return Requests.execute(request);
+        return Requests.performAction(request);
     }
 
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof VKMethod)) return false;
+        if (null == o || getClass() != o.getClass()) return false;
         VKMethod another = (VKMethod) o;
-        EqualsBuilder builder = new EqualsBuilder();
-        builder.append(method, another.method);
-        builder.append(params, another.params);
-        return builder.isEquals();
+        return new EqualsBuilder()
+                .append(method, another.method)
+                .append(params, another.params).isEquals();
     }
 
     @Override
     public int hashCode() {
-        HashCodeBuilder builder = new HashCodeBuilder();
-        builder.append(method);
-        builder.append(params);
-        return builder.toHashCode();
+        return new HashCodeBuilder()
+                .append(method)
+                .append(params).toHashCode();
     }
 
     @Override
     public String toString() {
-        ToStringBuilder builder = new ToStringBuilder(this, LombokToStringStyle.STYLE);
-        builder.append("method", method);
-        builder.append("params", params);
-        return builder.toString();
+        return LombokToStringStyle.getToStringBuilder(this)
+                .append("method", method)
+                .append("params", params).toString();
     }
 }

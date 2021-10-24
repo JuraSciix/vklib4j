@@ -3,7 +3,6 @@ package org.jurasciix.vkapi;
 import com.google.gson.annotations.SerializedName;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jurasciix.vkapi.util.LombokToStringStyle;
 
 import java.util.List;
@@ -54,37 +53,34 @@ public class Error {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof Error)) return false;
+        if (null == o || getClass() != o.getClass()) return false;
         Error another = (Error) o;
-        EqualsBuilder builder = new EqualsBuilder();
-        builder.append(code, another.code);
-        builder.append(captchaSid, another.captchaSid);
-        builder.append(message, another.message);
-        builder.append(requestParams, another.requestParams);
-        builder.append(captchaImage, another.captchaImage);
-        return builder.isEquals();
+        return new EqualsBuilder()
+                .append(code, another.code)
+                .append(captchaSid, another.captchaSid)
+                .append(message, another.message)
+                .append(requestParams, another.requestParams)
+                .append(captchaImage, another.captchaImage).isEquals();
     }
 
     @Override
     public int hashCode() {
-        HashCodeBuilder builder = new HashCodeBuilder();
-        builder.append(code);
-        builder.append(message);
-        builder.append(requestParams);
-        builder.append(captchaImage);
-        builder.append(captchaSid);
-        return builder.toHashCode();
+        return new HashCodeBuilder()
+                .append(code)
+                .append(message)
+                .append(requestParams)
+                .append(captchaImage)
+                .append(captchaSid).toHashCode();
     }
 
     @Override
     public String toString() {
-        ToStringBuilder builder = new ToStringBuilder(this, LombokToStringStyle.STYLE);
-        builder.append("code", code);
-        builder.append("message", message);
-        builder.append("requestParams", requestParams);
-        builder.append("captchaImage", captchaImage);
-        builder.append("captchaSid", captchaSid);
-        return builder.toString();
+        return LombokToStringStyle.getToStringBuilder(this)
+                .append("code", code)
+                .append("message", message)
+                .append("requestParams", requestParams)
+                .append("captchaImage", captchaImage)
+                .append("captchaSid", captchaSid).toString();
     }
 
     public static class RequestParam {
@@ -109,28 +105,21 @@ public class Error {
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
-            if (!(o instanceof RequestParam)) return false;
+            if (null == o || getClass() != o.getClass()) return false;
             RequestParam another = (RequestParam) o;
-            EqualsBuilder builder = new EqualsBuilder();
-            builder.append(key, another.key);
-            builder.append(value, another.value);
-            return builder.isEquals();
+            return new EqualsBuilder().append(key, another.key).append(value, another.value).isEquals();
         }
 
         @Override
         public int hashCode() {
-            HashCodeBuilder builder = new HashCodeBuilder();
-            builder.append(key);
-            builder.append(value);
-            return builder.toHashCode();
+            return new HashCodeBuilder().append(key).append(value).toHashCode();
         }
 
         @Override
         public String toString() {
-            ToStringBuilder builder = new ToStringBuilder(this, LombokToStringStyle.STYLE);
-            builder.append("key", key);
-            builder.append("value", value);
-            return builder.toString();
+            return LombokToStringStyle.getToStringBuilder(this)
+                    .append("key", key)
+                    .append("value", value).toString();
         }
     }
 }

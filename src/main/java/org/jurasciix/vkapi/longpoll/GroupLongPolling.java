@@ -11,16 +11,6 @@ import java.util.Map;
 
 public class GroupLongPolling extends LongPolling {
 
-    protected static final String HTTP_PARAM_WAIT = "wait";
-
-    protected static final String METHOD_GET_SERVER = "groups.getLongPollServer";
-
-    protected static final String METHOD_PARAM_GROUP_ID = "group_id";
-
-    protected static final String JSON_UPDATE_GROUP_ID = "group_id";
-    protected static final String JSON_UPDATE_OBJECT = "object";
-    protected static final String JSON_UPDATE_TYPE = "type";
-
     public static final String EVENT_MESSAGE_NEW = "message_new";
     public static final String EVENT_MESSAGE_REPLY = "message_reply";
     public static final String EVENT_MESSAGE_EDIT = "message_edit";
@@ -75,6 +65,18 @@ public class GroupLongPolling extends LongPolling {
     public static final String EVENT_DONUT_MONEY_WITHDRAW = "donut_money_withdraw";
     public static final String EVENT_DONUT_MONEY_WITHDRAW_ERROR = "donut_money_withdraw_error";
 
+    protected static final String HTTP_PARAM_WAIT = "wait";
+
+    protected static final String METHOD_GET_SERVER = "groups.getLongPollServer";
+
+    protected static final String METHOD_PARAM_GROUP_ID = "group_id";
+
+    protected static final String JSON_UPDATE_GROUP_ID = "group_id";
+    protected static final String JSON_UPDATE_OBJECT = "object";
+    protected static final String JSON_UPDATE_TYPE = "type";
+
+    protected static final int DEFAULT_WAIT = RECOMMENDED_WAIT;
+
     private static Map<String, String> buildAdditionalRequestParams(int wait) {
         Map<String, String> additionalRequestParams = new LinkedHashMap<>();
         additionalRequestParams.put(HTTP_PARAM_WAIT, Integer.toString(wait));
@@ -84,15 +86,19 @@ public class GroupLongPolling extends LongPolling {
     private static volatile int ID = 0;
 
     private static synchronized String buildThreadName() {
-        String name = (GroupLongPolling.class.getName() + "-" + ID);
+        String name = (GroupLongPolling.class.getSimpleName() + "-" + ID);
         ID++;
         return name;
     }
 
     private final int groupId;
 
+    public GroupLongPolling(VKActor actor) {
+        this(actor, actor.getTargetId());
+    }
+
     public GroupLongPolling(VKActor actor, int groupId) {
-        this(actor, groupId, 25);
+        this(actor, groupId, DEFAULT_WAIT);
     }
 
     public GroupLongPolling(VKActor actor, int groupId, int wait) {
@@ -114,6 +120,9 @@ public class GroupLongPolling extends LongPolling {
 
     @Override
     public void onUpdate(JsonElement sourceUpdate) {
+        if (!sourceUpdate.isJsonObject()) {
+            throw new IllegalArgumentException(sourceUpdate.getClass() + ": " + sourceUpdate.toString());
+        }
         JsonObject update = sourceUpdate.getAsJsonObject();
         String type = update.get(JSON_UPDATE_TYPE).getAsString();
         int groupId = update.get(JSON_UPDATE_GROUP_ID).getAsInt();

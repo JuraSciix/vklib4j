@@ -4,13 +4,13 @@ import com.google.gson.JsonArray;
 import com.google.gson.annotations.SerializedName;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.jurasciix.vkapi.util.LombokToStringStyle;
 
 public class LongPollResult {
 
     protected static final String JSON_FAILED = "failed";
     protected static final String JSON_TIMESTAMP = "ts";
+    protected static final String JSON_PERSISTENT_TIMESTAMP = "pts";
     protected static final String JSON_UPDATES = "updates";
 
     @SerializedName(JSON_FAILED)
@@ -18,6 +18,9 @@ public class LongPollResult {
 
     @SerializedName(JSON_TIMESTAMP)
     private String timestamp;
+
+    @SerializedName(JSON_PERSISTENT_TIMESTAMP)
+    private String persistentTimestamp;
 
     @SerializedName(JSON_UPDATES)
     private JsonArray updates;
@@ -34,6 +37,10 @@ public class LongPollResult {
         return timestamp;
     }
 
+    public String getPersistentTimestamp() {
+        return persistentTimestamp;
+    }
+
     public JsonArray getUpdates() {
         return updates;
     }
@@ -41,30 +48,30 @@ public class LongPollResult {
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
-        if (!(o instanceof LongPollResult)) return false;
+        if (null == o || getClass() != o.getClass()) return false;
         LongPollResult another = (LongPollResult) o;
-        EqualsBuilder builder = new EqualsBuilder();
-        builder.append(failed, another.failed);
-        builder.append(timestamp, another.timestamp);
-        builder.append(updates, another.updates);
-        return builder.isEquals();
+        return new EqualsBuilder()
+                .append(failed, another.failed)
+                .append(timestamp, another.timestamp)
+                .append(persistentTimestamp, another.persistentTimestamp)
+                .append(updates, another.updates).isEquals();
     }
 
     @Override
     public int hashCode() {
-        HashCodeBuilder builder = new HashCodeBuilder();
-        builder.append(failed);
-        builder.append(timestamp);
-        builder.append(updates);
-        return builder.toHashCode();
+        return new HashCodeBuilder()
+                .append(failed)
+                .append(timestamp)
+                .append(persistentTimestamp)
+                .append(updates).toHashCode();
     }
 
     @Override
     public String toString() {
-        ToStringBuilder builder = new ToStringBuilder(this, LombokToStringStyle.STYLE);
-        builder.append("failed", failed);
-        builder.append("timestamp", timestamp);
-        builder.append("updates", updates);
-        return builder.toString();
+        return LombokToStringStyle.getToStringBuilder(this)
+                .append("failed", failed)
+                .append("timestamp", timestamp)
+                .append("persistentTimestamp", persistentTimestamp)
+                .append("updates", updates).toString();
     }
 }

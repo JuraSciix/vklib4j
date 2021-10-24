@@ -12,24 +12,19 @@ import java.util.Optional;
 
 public class UserLongPolling extends LongPolling {
 
-    protected static final String HTTP_PARAM_MODE = "mode";
-    protected static final String HTTP_PARAM_VERSION = "version";
-    protected static final String HTTP_PARAM_WAIT = "wait";
-
-    protected static final String METHOD_GET_SERVER = "messages.getLongPollServer";
-
-    protected static final String METHOD_PARAM_GROUP_ID = "group_id";
-    protected static final String METHOD_PARAM_NEED_PTS = "need_pts";
-
-    protected static final int JSON_UPDATE_CODE = 0;
+    public static final int MODE_GET_ATTACHMENTS = 2;
+    public static final int MODE_GET_EXTENDED = 8;
+    public static final int MODE_GET_PTS = 32;
+    public static final int MODE_GET_EXTRA_ONLINE = 64;
+    public static final int MODE_GET_RANDOM_ID = 128;
 
     public static final int EVENT_FLAGS_UPDATE = 1;
     public static final int EVENT_FLAGS_SET = 2;
     public static final int EVENT_FLAGS_RESET = 3;
     public static final int EVENT_MESSAGE_NEW = 4;
     public static final int EVENT_MESSAGE_EDIT = 5;
-    public static final int EVENT_INPUT_MESSAGES_READ = 6;
-    public static final int EVENT_OUTPUT_MESSAGES_READ = 7;
+    public static final int EVENT_INCOMING_MESSAGES_READ = 6;
+    public static final int EVENT_OUTGOING_MESSAGES_READ = 7;
     public static final int EVENT_FRIEND_ONLINE = 8;
     public static final int EVENT_FRIEND_OFFLINE = 9;
     public static final int EVENT_PEER_FLAGS_RESET = 10;
@@ -39,20 +34,36 @@ public class UserLongPolling extends LongPolling {
     public static final int EVENT_MESSAGES_RESTORE = 14;
     public static final int EVENT_MAJOR_ID_UPDATE = 20;
     public static final int EVENT_MINOR_ID_UPDATE = 21;
-    public static final int EVENT_CHAT_PARAM_UPDATE = 51;
-    public static final int EVENT_CHAT_INFO_UPDATE = 52;
+    public static final int EVENT_CHAT_EDIT = 51;
+    public static final int EVENT_CHAT_UPDATE = 52;
     public static final int EVENT_USER_TYPING = 61;
-    public static final int EVENT_PEER_USER_TYPING = 62;
-    public static final int EVENT_PEER_USERS_TYPING = 63;
-    public static final int EVENT_PEER_USERS_VOICING = 64;
+    public static final int EVENT_USER_TYPING_IN_CHAT = 62;
+    public static final int EVENT_USERS_TYPING_IN_CHAT = 63;
+    public static final int EVENT_USERS_VOICING_IN_CHAT = 64;
     public static final int EVENT_USER_VOICING = 70;
     public static final int EVENT_COUNTER_UPDATE = 80;
     public static final int EVENT_NOTIFICATIONS_EDIT = 114;
 
-    private static Map<String, String> buildAdditionalRequestParams(int mode, int version, int wait) {
+    protected static final String HTTP_PARAM_VERSION = "version";
+    protected static final String HTTP_PARAM_MODE = "mode";
+    protected static final String HTTP_PARAM_WAIT = "wait";
+
+    protected static final String METHOD_GET_SERVER = "messages.getLongPollServer";
+
+    protected static final String METHOD_PARAM_GROUP_ID = "group_id";
+    protected static final String METHOD_PARAM_NEED_PTS = "need_pts";
+
+    protected static final int JSON_UPDATE_CODE = 0;
+
+    protected static final boolean DEFAULT_NEED_PTS = false;
+    protected static final int DEFAULT_VERSION = 10;
+    protected static final int DEFAULT_MODE = 2;
+    protected static final int DEFAULT_WAIT = RECOMMENDED_WAIT;
+
+    private static Map<String, String> buildAdditionalRequestParams(int version, int mode, int wait) {
         Map<String, String> additionalRequestParameters = new LinkedHashMap<>();
-        additionalRequestParameters.put(HTTP_PARAM_MODE, Integer.toString(mode));
         additionalRequestParameters.put(HTTP_PARAM_VERSION, Integer.toString(version));
+        additionalRequestParameters.put(HTTP_PARAM_MODE, Integer.toString(mode));
         additionalRequestParameters.put(HTTP_PARAM_WAIT, Integer.toString(wait));
         return additionalRequestParameters;
     }
@@ -67,30 +78,30 @@ public class UserLongPolling extends LongPolling {
 
     private final Integer groupId;
 
-    private final Boolean needPts;
+    private final boolean needPts;
 
     public UserLongPolling(VKActor actor) {
         this(actor, null);
     }
 
     public UserLongPolling(VKActor actor, Integer groupId) {
-        this(actor, groupId, null);
+        this(actor, groupId, DEFAULT_NEED_PTS);
     }
 
-    public UserLongPolling(VKActor actor, Integer groupId, Boolean needPts) {
-        this(actor, groupId, needPts, 2);
+    public UserLongPolling(VKActor actor, Integer groupId, boolean needPts) {
+        this(actor, groupId, needPts, DEFAULT_VERSION);
     }
 
-    public UserLongPolling(VKActor actor, Integer groupId, Boolean needPts, int mode) {
-        this(actor, groupId, needPts, mode, 10);
+    public UserLongPolling(VKActor actor, Integer groupId, boolean needPts, int version) {
+        this(actor, groupId, needPts, version, DEFAULT_MODE);
     }
 
-    public UserLongPolling(VKActor actor, Integer groupId, Boolean needPts, int mode, int version) {
-        this(actor, groupId, needPts, mode, version, 25);
+    public UserLongPolling(VKActor actor, Integer groupId, boolean needPts, int version, int mode) {
+        this(actor, groupId, needPts, mode, version, DEFAULT_WAIT);
     }
 
-    public UserLongPolling(VKActor actor, Integer groupId, Boolean needPts, int mode, int version, int wait) {
-        super(actor, buildAdditionalRequestParams(mode, version, wait));
+    public UserLongPolling(VKActor actor, Integer groupId, boolean needPts, int version, int mode, int wait) {
+        super(actor, buildAdditionalRequestParams(version, mode, wait));
         this.groupId = groupId;
         this.needPts = needPts;
         setName(buildThreadName());
@@ -101,19 +112,24 @@ public class UserLongPolling extends LongPolling {
     }
 
     public boolean isNeedPts() {
-        return Optional.ofNullable(needPts).orElse(false);
+        return needPts;
     }
 
     @Override
     public LongPollServer getServer() throws ApiException {
         VKMethod method = new VKMethod(METHOD_GET_SERVER);
         Optional.ofNullable(groupId).ifPresent(groupId -> method.param(METHOD_PARAM_GROUP_ID, groupId));
-        Optional.ofNullable(needPts).ifPresent(needPts -> method.param(METHOD_PARAM_NEED_PTS, needPts));
+        if (needPts) {
+            method.param(METHOD_PARAM_NEED_PTS, true);
+        }
         return method.executeAs(getActor(), LongPollServer.class);
     }
 
     @Override
     public void onUpdate(JsonElement sourceUpdate) {
+        if (!sourceUpdate.isJsonArray()) {
+            throw new IllegalArgumentException(sourceUpdate.getClass() + ": " + sourceUpdate.toString());
+        }
         JsonArray update = sourceUpdate.getAsJsonArray();
         int code = update.get(JSON_UPDATE_CODE).getAsInt();
 
@@ -133,11 +149,11 @@ public class UserLongPolling extends LongPolling {
             case EVENT_MESSAGE_EDIT:
                 onMessageEdit(update);
                 break;
-            case EVENT_INPUT_MESSAGES_READ:
-                onInputMessagesRead(update);
+            case EVENT_INCOMING_MESSAGES_READ:
+                onIncomingMessagesRead(update);
                 break;
-            case EVENT_OUTPUT_MESSAGES_READ:
-                onOutputMessagesRead(update);
+            case EVENT_OUTGOING_MESSAGES_READ:
+                onOutgoingMessagesRead(update);
                 break;
             case EVENT_FRIEND_ONLINE:
                 onFriendOnline(update);
@@ -166,23 +182,23 @@ public class UserLongPolling extends LongPolling {
             case EVENT_MINOR_ID_UPDATE:
                 onMinorIdUpdate(update);
                 break;
-            case EVENT_CHAT_PARAM_UPDATE:
-                onChatParamUpdate(update);
+            case EVENT_CHAT_EDIT:
+                onChatEdit(update);
                 break;
-            case EVENT_CHAT_INFO_UPDATE:
-                onChatInfoUpdate(update);
+            case EVENT_CHAT_UPDATE:
+                onChatUpdate(update);
                 break;
             case EVENT_USER_TYPING:
                 onUserTyping(update);
                 break;
-            case EVENT_PEER_USER_TYPING:
-                onPeerUserTyping(update);
+            case EVENT_USER_TYPING_IN_CHAT:
+                onUserTypingInChat(update);
                 break;
-            case EVENT_PEER_USERS_TYPING:
-                onPeerUsersTyping(update);
+            case EVENT_USERS_TYPING_IN_CHAT:
+                onUsersTypingInChat(update);
                 break;
-            case EVENT_PEER_USERS_VOICING:
-                onPeerUsersVoicing(update);
+            case EVENT_USERS_VOICING_IN_CHAT:
+                onUsersVoicingInChat(update);
                 break;
             case EVENT_USER_VOICING:
                 onUserVoicing(update);
@@ -213,10 +229,10 @@ public class UserLongPolling extends LongPolling {
     protected void onMessageEdit(JsonArray data) {
     }
 
-    protected void onInputMessagesRead(JsonArray data) {
+    protected void onIncomingMessagesRead(JsonArray data) {
     }
 
-    protected void onOutputMessagesRead(JsonArray data) {
+    protected void onOutgoingMessagesRead(JsonArray data) {
     }
 
     protected void onFriendOnline(JsonArray data) {
@@ -246,22 +262,22 @@ public class UserLongPolling extends LongPolling {
     protected void onMinorIdUpdate(JsonArray data) {
     }
 
-    protected void onChatParamUpdate(JsonArray data) {
+    protected void onChatEdit(JsonArray data) {
     }
 
-    protected void onChatInfoUpdate(JsonArray data) {
+    protected void onChatUpdate(JsonArray data) {
     }
 
     protected void onUserTyping(JsonArray data) {
     }
 
-    protected void onPeerUserTyping(JsonArray data) {
+    protected void onUserTypingInChat(JsonArray data) {
     }
 
-    protected void onPeerUsersTyping(JsonArray data) {
+    protected void onUsersTypingInChat(JsonArray data) {
     }
 
-    protected void onPeerUsersVoicing(JsonArray data) {
+    protected void onUsersVoicingInChat(JsonArray data) {
     }
 
     protected void onUserVoicing(JsonArray data) {
