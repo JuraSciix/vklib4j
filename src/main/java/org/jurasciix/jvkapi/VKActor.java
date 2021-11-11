@@ -1,22 +1,20 @@
-package org.jurasciix.vkapi;
+package org.jurasciix.jvkapi;
 
-import org.jurasciix.vkapi.util.GsonManager;
-import org.jurasciix.vkapi.util.HttpRequestFactory;
-import org.jurasciix.vkapi.util.JsonManager;
-import org.jurasciix.vkapi.util.RequestFactory;
+import org.jurasciix.jvkapi.util.GsonManager;
+import org.jurasciix.jvkapi.util.HttpRequestFactory;
+import org.jurasciix.jvkapi.util.JsonManager;
+import org.jurasciix.jvkapi.util.RequestFactory;
 
 public final class VKActor {
+
+    public static final String API_VERSION = "5.131";
 
     public static final class Builder {
 
         private RequestFactory requestFactory;
-
         private JsonManager jsonManager;
-
         private String accessToken;
-
         private String version;
-
         private Integer targetId;
 
         Builder() {
@@ -43,20 +41,35 @@ public final class VKActor {
             return this;
         }
 
-        public Builder targetId(Integer targetId) {
+        public Builder targetId(int targetId) {
             this.targetId = targetId;
             return this;
         }
 
         public VKActor build() {
+            checkNulls();
             return new VKActor(requestFactory, jsonManager, accessToken, version, targetId);
+        }
+
+        private void checkNulls() {
+            if (requestFactory == null) {
+                throw new IllegalStateException("request factory must be not null");
+            }
+            if (jsonManager == null) {
+                throw new IllegalStateException("json manager must be not null");
+            }
+            if (accessToken == null) {
+                throw new IllegalStateException("access token must be not null");
+            }
+            if (version == null) {
+                throw new IllegalStateException("version must be not null");
+            }
         }
     }
 
     private static final RequestFactory DEFAULT_REQUEST_FACTORY = HttpRequestFactory.getInstance();
     private static final JsonManager DEFAULT_JSON_MANAGER = GsonManager.getInstance();
-
-    public static final String API_VERSION = "5.131";
+    private static final String DEFAULT_VERSION = API_VERSION;
 
     public static Builder builder() {
         return new Builder();
@@ -66,7 +79,7 @@ public final class VKActor {
         Builder builder = builder();
         builder.requestFactory(DEFAULT_REQUEST_FACTORY);
         builder.jsonManager(DEFAULT_JSON_MANAGER);
-        builder.version(API_VERSION);
+        builder.version(DEFAULT_VERSION);
         return builder;
     }
 
@@ -74,14 +87,14 @@ public final class VKActor {
         return default_().accessToken(accessToken).build();
     }
 
+    public static VKActor fromAccessTokenAndId(String accessToken, int targetId) {
+        return default_().accessToken(accessToken).targetId(targetId).build();
+    }
+
     private final RequestFactory requestFactory;
-
     private final JsonManager jsonManager;
-
     private final String accessToken;
-
     private final String version;
-
     private final Integer targetId;
 
     VKActor(RequestFactory requestFactory, JsonManager jsonManager, String accessToken, String version,

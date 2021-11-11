@@ -1,15 +1,32 @@
-package org.jurasciix.vkapi.longpoll;
+package org.jurasciix.jvkapi.longpoll;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.jurasciix.vkapi.ApiException;
-import org.jurasciix.vkapi.VKActor;
-import org.jurasciix.vkapi.VKMethod;
+import org.jurasciix.jvkapi.ApiException;
+import org.jurasciix.jvkapi.VKActor;
+import org.jurasciix.jvkapi.VKMethod;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
+public abstract class GroupLongPolling extends LongPolling {
 
-public class GroupLongPolling extends LongPolling {
+    public static final class Options {
+
+        Integer groupId = null;
+        int waitTime = DEFAULT_WAIT;
+
+        Options() {
+            super();
+        }
+
+        public Options groupId(int groupId) {
+            this.groupId = groupId;
+            return this;
+        }
+
+        public Options waitTime(int waitTime) {
+            this.waitTime = waitTime;
+            return this;
+        }
+    }
 
     public static final String EVENT_MESSAGE_NEW = "message_new";
     public static final String EVENT_MESSAGE_REPLY = "message_reply";
@@ -65,49 +82,32 @@ public class GroupLongPolling extends LongPolling {
     public static final String EVENT_DONUT_MONEY_WITHDRAW = "donut_money_withdraw";
     public static final String EVENT_DONUT_MONEY_WITHDRAW_ERROR = "donut_money_withdraw_error";
 
-    protected static final String HTTP_PARAM_WAIT = "wait";
+    static final int DEFAULT_WAIT = LongPolling.DEFAULT_WAIT;
 
-    protected static final String METHOD_GET_SERVER = "groups.getLongPollServer";
+    private static final String METHOD_GET_SERVER = "groups.getLongPollServer";
 
-    protected static final String METHOD_PARAM_GROUP_ID = "group_id";
+    private static final String METHOD_PARAM_GROUP_ID = "group_id";
 
-    protected static final String JSON_UPDATE_GROUP_ID = "group_id";
-    protected static final String JSON_UPDATE_OBJECT = "object";
-    protected static final String JSON_UPDATE_TYPE = "type";
+    private static final String JSON_UPDATE_TYPE = "type";
+    private static final String JSON_UPDATE_OBJECT = "object";
 
-    protected static final int DEFAULT_WAIT = RECOMMENDED_WAIT;
-
-    private static Map<String, String> buildAdditionalRequestParams(int wait) {
-        Map<String, String> additionalRequestParams = new LinkedHashMap<>();
-        additionalRequestParams.put(HTTP_PARAM_WAIT, Integer.toString(wait));
-        return additionalRequestParams;
-    }
-
-    private static volatile int ID = 0;
-
-    private static synchronized String buildThreadName() {
-        String name = (GroupLongPolling.class.getSimpleName() + "-" + ID);
-        ID++;
-        return name;
+    public static Options options() {
+        return new Options();
     }
 
     private final int groupId;
 
-    public GroupLongPolling(VKActor actor) {
-        this(actor, actor.getTargetId());
+    protected GroupLongPolling(VKActor actor) {
+        super(actor);
+        groupId = actor.getTargetId();
     }
 
-    public GroupLongPolling(VKActor actor, int groupId) {
-        this(actor, groupId, DEFAULT_WAIT);
+    protected GroupLongPolling(VKActor actor, Options options) {
+        super(actor, options.waitTime);
+        groupId = options.groupId != null ? options.groupId : actor.getTargetId();
     }
 
-    public GroupLongPolling(VKActor actor, int groupId, int wait) {
-        super(actor, buildAdditionalRequestParams(wait));
-        this.groupId = groupId;
-        setName(buildThreadName());
-    }
-
-    public int getGroupId() {
+    public final int getGroupId() {
         return groupId;
     }
 
@@ -120,338 +120,334 @@ public class GroupLongPolling extends LongPolling {
 
     @Override
     public void onUpdate(JsonElement sourceUpdate) {
-        if (!sourceUpdate.isJsonObject()) {
-            throw new IllegalArgumentException(sourceUpdate.getClass() + ": " + sourceUpdate.toString());
-        }
         JsonObject update = sourceUpdate.getAsJsonObject();
         String type = update.get(JSON_UPDATE_TYPE).getAsString();
-        int groupId = update.get(JSON_UPDATE_GROUP_ID).getAsInt();
         JsonObject data = update.getAsJsonObject(JSON_UPDATE_OBJECT);
 
         switch (type) {
             case EVENT_MESSAGE_NEW:
-                onMessageNew(groupId, data);
+                onMessageNew(data);
                 break;
             case EVENT_MESSAGE_REPLY:
-                onMessageReply(groupId, data);
+                onMessageReply(data);
                 break;
             case EVENT_MESSAGE_EDIT:
-                onMessageEdit(groupId, data);
+                onMessageEdit(data);
                 break;
             case EVENT_MESSAGE_ALLOW:
-                onMessageAllow(groupId, data);
+                onMessageAllow(data);
                 break;
             case EVENT_MESSAGE_DENY:
-                onMessageDeny(groupId, data);
+                onMessageDeny(data);
                 break;
             case EVENT_MESSAGE_TYPING:
-                onMessageTyping(groupId, data);
+                onMessageTyping(data);
                 break;
             case EVENT_MESSAGE_CALLBACK:
-                onMessageCallback(groupId, data);
+                onMessageCallback(data);
                 break;
             case EVENT_PHOTO_NEW:
-                onPhotoNew(groupId, data);
+                onPhotoNew(data);
                 break;
             case EVENT_PHOTO_COMMENT_NEW:
-                onPhotoCommentNew(groupId, data);
+                onPhotoCommentNew(data);
                 break;
             case EVENT_PHOTO_COMMENT_EDIT:
-                onPhotoCommentEdit(groupId, data);
+                onPhotoCommentEdit(data);
                 break;
             case EVENT_PHOTO_COMMENT_RESTORE:
-                onPhotoCommentRestore(groupId, data);
+                onPhotoCommentRestore(data);
                 break;
             case EVENT_PHOTO_COMMENT_DELETE:
-                onPhotoCommentDelete(groupId, data);
+                onPhotoCommentDelete(data);
                 break;
             case EVENT_AUDIO_NEW:
-                onAudioNew(groupId, data);
+                onAudioNew(data);
                 break;
             case EVENT_VIDEO_NEW:
-                onVideoNew(groupId, data);
+                onVideoNew(data);
                 break;
             case EVENT_VIDEO_COMMENT_NEW:
-                onVideoCommentNew(groupId, data);
+                onVideoCommentNew(data);
                 break;
             case EVENT_VIDEO_COMMENT_EDIT:
-                onVideoCommentEdit(groupId, data);
+                onVideoCommentEdit(data);
                 break;
             case EVENT_VIDEO_COMMENT_RESTORE:
-                onVideoCommentRestore(groupId, data);
+                onVideoCommentRestore(data);
                 break;
             case EVENT_VIDEO_COMMENT_DELETE:
-                onVideoCommentDelete(groupId, data);
+                onVideoCommentDelete(data);
                 break;
             case EVENT_WALL_POST_NEW:
-                onWallPostNew(groupId, data);
+                onWallPostNew(data);
                 break;
             case EVENT_WALL_REPOST:
-                onWallRepost(groupId, data);
+                onWallRepost(data);
                 break;
             case EVENT_WALL_REPLY_NEW:
-                onWallReplyNew(groupId, data);
+                onWallReplyNew(data);
                 break;
             case EVENT_WALL_REPLY_EDIT:
-                onWallReplyEdit(groupId, data);
+                onWallReplyEdit(data);
                 break;
             case EVENT_WALL_REPLY_RESTORE:
-                onWallReplyRestore(groupId, data);
+                onWallReplyRestore(data);
                 break;
             case EVENT_WALL_REPLY_DELETE:
-                onWallReplyDelete(groupId, data);
+                onWallReplyDelete(data);
                 break;
             case EVENT_LIKE_ADD:
-                onLikeAdd(groupId, data);
+                onLikeAdd(data);
                 break;
             case EVENT_LIKE_REMOVE:
-                onLikeRemove(groupId, data);
+                onLikeRemove(data);
                 break;
             case EVENT_BOARD_POST_NEW:
-                onBoardPostNew(groupId, data);
+                onBoardPostNew(data);
                 break;
             case EVENT_BOARD_POST_EDIT:
-                onBoardPostEdit(groupId, data);
+                onBoardPostEdit(data);
                 break;
             case EVENT_BOARD_POST_RESTORE:
-                onBoardPostRestore(groupId, data);
+                onBoardPostRestore(data);
                 break;
             case EVENT_BOARD_POST_DELETE:
-                onBoardPostDelete(groupId, data);
+                onBoardPostDelete(data);
                 break;
             case EVENT_MARKET_COMMENT_NEW:
-                onMarketCommentNew(groupId, data);
+                onMarketCommentNew(data);
                 break;
             case EVENT_MARKET_COMMENT_EDIT:
-                onMarketCommentEdit(groupId, data);
+                onMarketCommentEdit(data);
                 break;
             case EVENT_MARKET_COMMENT_RESTORE:
-                onMarketCommentRestore(groupId, data);
+                onMarketCommentRestore(data);
                 break;
             case EVENT_MARKET_COMMENT_DELETE:
-                onMarketCommentDelete(groupId, data);
+                onMarketCommentDelete(data);
                 break;
             case EVENT_MARKET_ORDER_NEW:
-                onMarketOrderNew(groupId, data);
+                onMarketOrderNew(data);
                 break;
             case EVENT_MARKET_ORDER_EDIT:
-                onMarketOrderEdit(groupId, data);
+                onMarketOrderEdit(data);
                 break;
             case EVENT_GROUP_LEAVE:
-                onGroupLeave(groupId, data);
+                onGroupLeave(data);
                 break;
             case EVENT_GROUP_JOIN:
-                onGroupJoin(groupId, data);
+                onGroupJoin(data);
                 break;
             case EVENT_USER_BLOCK:
-                onUserBlock(groupId, data);
+                onUserBlock(data);
                 break;
             case EVENT_USER_UNBLOCK:
-                onUserUnblock(groupId, data);
+                onUserUnblock(data);
                 break;
             case EVENT_POLL_VOTE_NEW:
-                onPollVoteNew(groupId, data);
+                onPollVoteNew(data);
                 break;
             case EVENT_GROUP_OFFICERS_EDIT:
-                onGroupOfficersEdit(groupId, data);
+                onGroupOfficersEdit(data);
                 break;
             case EVENT_CHANGE_SETTINGS:
-                onChangeSettings(groupId, data);
+                onChangeSettings(data);
                 break;
             case EVENT_CHANGE_PHOTO:
-                onChangePhoto(groupId, data);
+                onChangePhoto(data);
                 break;
             case EVENT_VKPAY_TRANSACTION:
-                onVkpayTransaction(groupId, data);
+                onVkpayTransaction(data);
                 break;
             case EVENT_APP_PAYLOAD:
-                onAppPayload(groupId, data);
+                onAppPayload(data);
                 break;
             case EVENT_DONUT_SUBSCRIPTION_CREATE:
-                onDonutSubscriptionCreate(groupId, data);
+                onDonutSubscriptionCreate(data);
                 break;
             case EVENT_DONUT_SUBSCRIPTION_PROLONGED:
-                onDonutSubscriptionProlonged(groupId, data);
+                onDonutSubscriptionProlonged(data);
                 break;
             case EVENT_DONUT_SUBSCRIPTION_EXPIRED:
-                onDonutSubscriptionExpired(groupId, data);
+                onDonutSubscriptionExpired(data);
                 break;
             case EVENT_DONUT_SUBSCRIPTION_CANCELLED:
-                onDonutSubscriptionCancelled(groupId, data);
+                onDonutSubscriptionCancelled(data);
                 break;
             case EVENT_DONUT_SUBSCRIPTION_PRICE_CHANGED:
-                onDonutSubscriptionPriceChanged(groupId, data);
+                onDonutSubscriptionPriceChanged(data);
                 break;
             case EVENT_DONUT_MONEY_WITHDRAW:
-                onDonutMoneyWithdraw(groupId, data);
+                onDonutMoneyWithdraw(data);
                 break;
             case EVENT_DONUT_MONEY_WITHDRAW_ERROR:
-                onDonutMoneyWithdrawError(groupId, data);
+                onDonutMoneyWithdrawError(data);
                 break;
             default:
-                onUnknownEvent(groupId, data);
+                onUnknownEvent(data);
         }
     }
 
-    protected void onMessageNew(int groupId, JsonObject data) {
+    protected void onMessageNew(JsonObject data) {
     }
 
-    protected void onMessageReply(int groupId, JsonObject data) {
+    protected void onMessageReply(JsonObject data) {
     }
 
-    protected void onMessageEdit(int groupId, JsonObject data) {
+    protected void onMessageEdit(JsonObject data) {
     }
 
-    protected void onMessageAllow(int groupId, JsonObject data) {
+    protected void onMessageAllow(JsonObject data) {
     }
 
-    protected void onMessageDeny(int groupId, JsonObject data) {
+    protected void onMessageDeny(JsonObject data) {
     }
 
-    protected void onMessageTyping(int groupId, JsonObject data) {
+    protected void onMessageTyping(JsonObject data) {
     }
 
-    protected void onMessageCallback(int groupId, JsonObject data) {
+    protected void onMessageCallback(JsonObject data) {
     }
 
-    protected void onPhotoNew(int groupId, JsonObject data) {
+    protected void onPhotoNew(JsonObject data) {
     }
 
-    protected void onPhotoCommentNew(int groupId, JsonObject data) {
+    protected void onPhotoCommentNew(JsonObject data) {
     }
 
-    protected void onPhotoCommentEdit(int groupId, JsonObject data) {
+    protected void onPhotoCommentEdit(JsonObject data) {
     }
 
-    protected void onPhotoCommentRestore(int groupId, JsonObject data) {
+    protected void onPhotoCommentRestore(JsonObject data) {
     }
 
-    protected void onPhotoCommentDelete(int groupId, JsonObject data) {
+    protected void onPhotoCommentDelete(JsonObject data) {
     }
 
-    protected void onAudioNew(int groupId, JsonObject data) {
+    protected void onAudioNew(JsonObject data) {
     }
 
-    protected void onVideoNew(int groupId, JsonObject data) {
+    protected void onVideoNew(JsonObject data) {
     }
 
-    protected void onVideoCommentNew(int groupId, JsonObject data) {
+    protected void onVideoCommentNew(JsonObject data) {
     }
 
-    protected void onVideoCommentEdit(int groupId, JsonObject data) {
+    protected void onVideoCommentEdit(JsonObject data) {
     }
 
-    protected void onVideoCommentRestore(int groupId, JsonObject data) {
+    protected void onVideoCommentRestore(JsonObject data) {
     }
 
-    protected void onVideoCommentDelete(int groupId, JsonObject data) {
+    protected void onVideoCommentDelete(JsonObject data) {
     }
 
-    protected void onWallPostNew(int groupId, JsonObject data) {
+    protected void onWallPostNew(JsonObject data) {
     }
 
-    protected void onWallRepost(int groupId, JsonObject data) {
+    protected void onWallRepost(JsonObject data) {
     }
 
-    protected void onWallReplyNew(int groupId, JsonObject data) {
+    protected void onWallReplyNew(JsonObject data) {
     }
 
-    protected void onWallReplyEdit(int groupId, JsonObject data) {
+    protected void onWallReplyEdit(JsonObject data) {
     }
 
-    protected void onWallReplyRestore(int groupId, JsonObject data) {
+    protected void onWallReplyRestore(JsonObject data) {
     }
 
-    protected void onWallReplyDelete(int groupId, JsonObject data) {
+    protected void onWallReplyDelete(JsonObject data) {
     }
 
-    protected void onLikeAdd(int groupId, JsonObject data) {
+    protected void onLikeAdd(JsonObject data) {
     }
 
-    protected void onLikeRemove(int groupId, JsonObject data) {
+    protected void onLikeRemove(JsonObject data) {
     }
 
-    protected void onBoardPostNew(int groupId, JsonObject data) {
+    protected void onBoardPostNew(JsonObject data) {
     }
 
-    protected void onBoardPostEdit(int groupId, JsonObject data) {
+    protected void onBoardPostEdit(JsonObject data) {
     }
 
-    protected void onBoardPostRestore(int groupId, JsonObject data) {
+    protected void onBoardPostRestore(JsonObject data) {
     }
 
-    protected void onBoardPostDelete(int groupId, JsonObject data) {
+    protected void onBoardPostDelete(JsonObject data) {
     }
 
-    protected void onMarketCommentNew(int groupId, JsonObject data) {
+    protected void onMarketCommentNew(JsonObject data) {
     }
 
-    protected void onMarketCommentEdit(int groupId, JsonObject data) {
+    protected void onMarketCommentEdit(JsonObject data) {
     }
 
-    protected void onMarketCommentRestore(int groupId, JsonObject data) {
+    protected void onMarketCommentRestore(JsonObject data) {
     }
 
-    protected void onMarketCommentDelete(int groupId, JsonObject data) {
+    protected void onMarketCommentDelete(JsonObject data) {
     }
 
-    protected void onMarketOrderNew(int groupId, JsonObject data) {
+    protected void onMarketOrderNew(JsonObject data) {
     }
 
-    protected void onMarketOrderEdit(int groupId, JsonObject data) {
+    protected void onMarketOrderEdit(JsonObject data) {
     }
 
-    protected void onGroupLeave(int groupId, JsonObject data) {
+    protected void onGroupLeave(JsonObject data) {
     }
 
-    protected void onGroupJoin(int groupId, JsonObject data) {
+    protected void onGroupJoin(JsonObject data) {
     }
 
-    protected void onUserBlock(int groupId, JsonObject data) {
+    protected void onUserBlock(JsonObject data) {
     }
 
-    protected void onUserUnblock(int groupId, JsonObject data) {
+    protected void onUserUnblock(JsonObject data) {
     }
 
-    protected void onPollVoteNew(int groupId, JsonObject data) {
+    protected void onPollVoteNew(JsonObject data) {
     }
 
-    protected void onGroupOfficersEdit(int groupId, JsonObject data) {
+    protected void onGroupOfficersEdit(JsonObject data) {
     }
 
-    protected void onChangeSettings(int groupId, JsonObject data) {
+    protected void onChangeSettings(JsonObject data) {
     }
 
-    protected void onChangePhoto(int groupId, JsonObject data) {
+    protected void onChangePhoto(JsonObject data) {
     }
 
-    protected void onVkpayTransaction(int groupId, JsonObject data) {
+    protected void onVkpayTransaction(JsonObject data) {
     }
 
-    protected void onAppPayload(int groupId, JsonObject data) {
+    protected void onAppPayload(JsonObject data) {
     }
 
-    protected void onDonutSubscriptionCreate(int groupId, JsonObject data) {
+    protected void onDonutSubscriptionCreate(JsonObject data) {
     }
 
-    protected void onDonutSubscriptionProlonged(int groupId, JsonObject data) {
+    protected void onDonutSubscriptionProlonged(JsonObject data) {
     }
 
-    protected void onDonutSubscriptionExpired(int groupId, JsonObject data) {
+    protected void onDonutSubscriptionExpired(JsonObject data) {
     }
 
-    protected void onDonutSubscriptionCancelled(int groupId, JsonObject data) {
+    protected void onDonutSubscriptionCancelled(JsonObject data) {
     }
 
-    protected void onDonutSubscriptionPriceChanged(int groupId, JsonObject data) {
+    protected void onDonutSubscriptionPriceChanged(JsonObject data) {
     }
 
-    protected void onDonutMoneyWithdraw(int groupId, JsonObject data) {
+    protected void onDonutMoneyWithdraw(JsonObject data) {
     }
 
-    protected void onDonutMoneyWithdrawError(int groupId, JsonObject data) {
+    protected void onDonutMoneyWithdrawError(JsonObject data) {
     }
 
-    protected void onUnknownEvent(int groupId, JsonObject data) {
+    protected void onUnknownEvent(JsonObject data) {
     }
 }

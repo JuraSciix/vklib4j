@@ -1,4 +1,4 @@
-package org.jurasciix.vkapi.longpoll;
+package org.jurasciix.jvkapi.longpoll;
 
 public class LongPollServerException extends Exception {
 
@@ -29,13 +29,13 @@ public class LongPollServerException extends Exception {
     @Override
     public String getMessage() {
         StringBuilder builder = new StringBuilder();
-        builder.append("Long Poll server returns the failed - ");
+        builder.append("Long Poll server returned a failed - ");
         builder.append(failed);
         if (minVersion != null && maxVersion != null) {
             builder.append(" (");
-            builder.append("minVersion: ");
+            builder.append("min version: ");
             builder.append(minVersion);
-            builder.append(", maxVersion: ");
+            builder.append(", max version: ");
             builder.append(maxVersion);
             builder.append(")");
         }

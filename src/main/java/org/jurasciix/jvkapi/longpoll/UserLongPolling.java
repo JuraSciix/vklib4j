@@ -1,62 +1,38 @@
-package org.jurasciix.vkapi.longpoll;
+package org.jurasciix.jvkapi.longpoll;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import org.jurasciix.vkapi.ApiException;
-import org.jurasciix.vkapi.VKActor;
-import org.jurasciix.vkapi.VKMethod;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+import org.jurasciix.jvkapi.ApiException;
+import org.jurasciix.jvkapi.VKActor;
+import org.jurasciix.jvkapi.VKMethod;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 
-public class UserLongPolling extends LongPolling {
+public abstract class UserLongPolling extends LongPolling {
 
     public static final class Options {
 
-        private boolean needPts = false;
-
-        private Integer groupId = null;
-
-        private int mode = DEFAULT_MODE;
-
-        private int version = DEFAULT_VERSION;
-
-        private int wait = DEFAULT_WAIT;
+        Integer groupId = null;
+        boolean needPts = false;
+        int version = DEFAULT_VERSION;
+        int mode = DEFAULT_MODE;
+        int waitTime = DEFAULT_WAIT;
 
         Options() {
             super();
         }
 
-        public boolean needPts() {
-            return needPts;
-        }
-
-        public Options needPts(boolean needPts) {
-            this.needPts = needPts;
-            return this;
-        }
-
-        public Integer groupId() {
-            return groupId;
-        }
-
-        public Options groupId(Integer groupId) {
+        public Options groupId(int groupId) {
             this.groupId = groupId;
             return this;
         }
 
-        public int mode() {
-            return mode;
-        }
-
-        public Options mode(int mode) {
-            this.mode = mode;
+        public Options needPts() {
+            needPts = true;
             return this;
-        }
-
-        public int version() {
-            return version;
         }
 
         public Options version(int version) {
@@ -64,13 +40,30 @@ public class UserLongPolling extends LongPolling {
             return this;
         }
 
-        public int wait_() {
-            return wait;
+        public Options mode(int mode) {
+            this.mode = mode;
+            return this;
         }
 
-        public Options wait_(int wait) {
-            this.wait = wait;
+        public Options mode(int... modes) {
+            int m = 0;
+            for (int mode : modes) {
+                m |= mode;
+            }
+            this.mode = m;
             return this;
+        }
+
+        public Options waitTime(int waitTime) {
+            this.waitTime = waitTime;
+            return this;
+        }
+
+        List<NameValuePair> toAdditionalRequestParams() {
+            List<NameValuePair> result = new ArrayList<>();
+            result.add(new BasicNameValuePair("version", Integer.toString(version)));
+            result.add(new BasicNameValuePair("mode", Integer.toString(mode)));
+            return result;
         }
     }
 
@@ -106,40 +99,16 @@ public class UserLongPolling extends LongPolling {
     public static final int EVENT_COUNTER_UPDATE = 80;
     public static final int EVENT_NOTIFICATIONS_EDIT = 114;
 
-    protected static final String HTTP_PARAM_VERSION = "version";
-    protected static final String HTTP_PARAM_MODE = "mode";
-    protected static final String HTTP_PARAM_WAIT = "wait";
+    static final int DEFAULT_VERSION = 10;
+    static final int DEFAULT_MODE = MODE_GET_ATTACHMENTS;
+    static final int DEFAULT_WAIT = LongPolling.DEFAULT_WAIT;
 
-    protected static final String METHOD_GET_SERVER = "messages.getLongPollServer";
+    private static final String METHOD_GET_SERVER = "messages.getLongPollServer";
 
-    protected static final String METHOD_PARAM_GROUP_ID = "group_id";
-    protected static final String METHOD_PARAM_NEED_PTS = "need_pts";
+    private static final String METHOD_PARAM_GROUP_ID = "group_id";
+    private static final String METHOD_PARAM_NEED_PTS = "need_pts";
 
-    protected static final int JSON_UPDATE_CODE = 0;
-
-    protected static final boolean DEFAULT_NEED_PTS = false;
-    protected static final int DEFAULT_VERSION = 10;
-    protected static final int DEFAULT_MODE = 2;
-    protected static final int DEFAULT_WAIT = RECOMMENDED_WAIT;
-
-    private static Map<String, String> buildAdditionalRequestParams(Options opts) {
-        Map<String, String> additionalRequestParameters = new LinkedHashMap<>();
-        if (opts == null) {
-            return additionalRequestParameters;
-        }
-        additionalRequestParameters.put(HTTP_PARAM_MODE, Integer.toString(opts.mode()));
-        additionalRequestParameters.put(HTTP_PARAM_VERSION, Integer.toString(opts.version()));
-        additionalRequestParameters.put(HTTP_PARAM_WAIT, Integer.toString(opts.wait_()));
-        return additionalRequestParameters;
-    }
-
-    private static volatile int ID = 0;
-
-    private static synchronized String buildThreadName() {
-        String name = (UserLongPolling.class.getSimpleName() + "-" + ID);
-        ID++;
-        return name;
-    }
+    private static final int JSON_UPDATE_CODE = 0;
 
     public static Options options() {
         return new Options();
@@ -149,28 +118,24 @@ public class UserLongPolling extends LongPolling {
 
     private final boolean needPts;
 
-    public UserLongPolling(VKActor actor) {
-        this(actor, null);
+    protected UserLongPolling(VKActor actor) {
+        super(actor);
+        groupId = null;
+        needPts = false;
     }
 
-    public UserLongPolling(VKActor actor, Options options) {
-        super(actor, buildAdditionalRequestParams(options));
-        groupId = (options == null) ? null : options.groupId();
-        needPts = options != null && options.needPts();
-    }
-
-    public Integer getGroupId() {
-        return groupId;
-    }
-
-    public boolean isNeedPts() {
-        return needPts;
+    protected UserLongPolling(VKActor actor, Options options) {
+        super(actor, options.waitTime, options.toAdditionalRequestParams());
+        groupId = options.groupId;
+        needPts = options.needPts;
     }
 
     @Override
     public LongPollServer getServer() throws ApiException {
         VKMethod method = new VKMethod(METHOD_GET_SERVER);
-        Optional.ofNullable(groupId).ifPresent(groupId -> method.param(METHOD_PARAM_GROUP_ID, groupId));
+        if (groupId != null) {
+            method.param(METHOD_PARAM_GROUP_ID, groupId);
+        }
         if (needPts) {
             method.param(METHOD_PARAM_NEED_PTS, true);
         }
@@ -179,9 +144,6 @@ public class UserLongPolling extends LongPolling {
 
     @Override
     public void onUpdate(JsonElement sourceUpdate) {
-        if (!sourceUpdate.isJsonArray()) {
-            throw new IllegalArgumentException(sourceUpdate.getClass() + ": " + sourceUpdate.toString());
-        }
         JsonArray update = sourceUpdate.getAsJsonArray();
         int code = update.get(JSON_UPDATE_CODE).getAsInt();
 

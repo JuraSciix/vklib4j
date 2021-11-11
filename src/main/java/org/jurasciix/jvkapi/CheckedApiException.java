@@ -1,10 +1,10 @@
-package org.jurasciix.vkapi;
+package org.jurasciix.jvkapi;
 
-public class ApiException extends Exception {
+public class CheckedApiException extends RuntimeException {
 
     private final Error error;
 
-    public ApiException(Error error) {
+    public CheckedApiException(Error error) {
         this.error = error;
     }
 
@@ -13,11 +13,11 @@ public class ApiException extends Exception {
     }
 
     public int getErrorCode() {
-        return error.getCode();
+        return getError().getCode();
     }
 
     public String getErrorMessage() {
-        return error.getMessage();
+        return getError().getMessage();
     }
 
     @Override

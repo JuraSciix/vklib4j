@@ -4,9 +4,9 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <name>VKApi</name>
-    <description>A small and flexible library for easier integration with the VK API in Java.</description>
-    <url>https://github.com/JuraSciix/VKApi</url>
+    <name>JVKApi</name>
+    <description>Java library for easier working with the VK API.</description>
+    <url>https://github.com/JuraSciix/JVKApi</url>
 
     <licenses>
         <license>
@@ -15,9 +15,9 @@
         </license>
     </licenses>
 
-    <groupId>org.jurasciix.vkapi</groupId>
-    <artifactId>vkapi</artifactId>
-    <version>1.1.2</version>
+    <groupId>org.jurasciix.jvkapi</groupId>
+    <artifactId>jvkapi</artifactId>
+    <version>1.2</version>
 
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
@@ -42,13 +42,6 @@
             <groupId>org.apache.httpcomponents</groupId>
             <artifactId>httpclient</artifactId>
             <version>4.5.13</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
-            <groupId>commons-io</groupId>
-            <artifactId>commons-io</artifactId>
-            <version>2.4</version>
             <scope>provided</scope>
         </dependency>
     </dependencies>

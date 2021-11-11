@@ -1,37 +1,52 @@
-package org.jurasciix.vkapi.longpoll;
+package org.jurasciix.jvkapi.longpoll;
 
 import com.google.gson.JsonElement;
-import org.jurasciix.vkapi.ApiException;
-import org.jurasciix.vkapi.VKActor;
-import org.jurasciix.vkapi.util.Request;
-import org.jurasciix.vkapi.util.RequestException;
-import org.jurasciix.vkapi.util.Requests;
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+import org.jurasciix.jvkapi.ApiException;
+import org.jurasciix.jvkapi.VKActor;
+import org.jurasciix.jvkapi.util.Request;
+import org.jurasciix.jvkapi.util.RequestException;
 
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public abstract class LongPolling extends Thread {
 
     public static final int FAILED_INCORRECT_TS = 1;
-    public static final int FAILED_KEY_OUTDATED = 2;
+    public static final int FAILED_INCORRECT_KEY = 2;
     public static final int FAILED_DATA_LOST = 3;
+    public static final int FAILED_INCORRECT_VERSION = 4;
 
-    public static final int RECOMMENDED_WAIT = 25;
+    private static final String PARAM_WAIT = "wait";
+
+    protected static final int DEFAULT_WAIT = 25;
 
     private final VKActor actor;
 
-    private final Map<String, String> additionalRequestParams;
+    private final List<NameValuePair> additionalRequestParams;
 
     protected LongPolling(VKActor actor) {
-        this(actor, null);
+        this(actor, DEFAULT_WAIT);
     }
 
-    protected LongPolling(VKActor actor, Map<String, String> additionalRequestParams) {
+    protected LongPolling(VKActor actor, int waitTime) {
+        this(actor, waitTime, new ArrayList<>());
+    }
+
+    protected LongPolling(VKActor actor, int waitTime, List<NameValuePair> additionalRequestParams) {
         this.actor = actor;
+        additionalRequestParams.add(new BasicNameValuePair(PARAM_WAIT, Integer.toString(waitTime)));
         this.additionalRequestParams = additionalRequestParams;
     }
 
-    public VKActor getActor() {
+    public final VKActor getActor() {
         return actor;
+    }
+
+    public List<NameValuePair> getAdditionalRequestParams() {
+        return Collections.unmodifiableList(additionalRequestParams);
     }
 
     public abstract LongPollServer getServer() throws ApiException;
@@ -47,7 +62,7 @@ public abstract class LongPolling extends Thread {
         try {
             run0();
         } catch (ApiException | LongPollServerException e) {
-            throw new RequestException("failed to hold connection with Long Polling", e);
+            throw new RequestException("Long Polling error occurred", e);
         }
     }
 
@@ -64,7 +79,7 @@ public abstract class LongPolling extends Thread {
                 doHandleResponse(server, response);
             } catch (LongPollServerException e) {
                 int failed = e.getFailed();
-                if ((failed != FAILED_KEY_OUTDATED) && (failed != FAILED_DATA_LOST)) {
+                if ((failed != FAILED_INCORRECT_KEY) && (failed != FAILED_DATA_LOST)) {
                     throw e;
                 }
             }
@@ -72,17 +87,18 @@ public abstract class LongPolling extends Thread {
     }
 
     protected Request.Response doRequestServer(LongPollServer server) {
-        Request request = server.getRequest(actor.getRequestFactory());
-        Map<String, String> additionalParameters = additionalRequestParams;
+        Request request = server.createRequest(actor.getRequestFactory());
+        List<NameValuePair> additionalParameters = additionalRequestParams;
         if (additionalParameters != null) {
             request.addParameters(additionalParameters);
         }
-        return Requests.performAction(request);
+        return request.execute();
     }
 
     protected void doHandleResponse(LongPollServer server, Request.Response response)
             throws LongPollServerException {
-        LongPollResult result = Requests.fromJson(actor.getJsonManager(), response, LongPollResult.class);
+        LongPollResult result = actor.getJsonManager()
+                .fromJson(response.getContent(), LongPollResult.class);
         server.onResult(this, result);
     }
 }
