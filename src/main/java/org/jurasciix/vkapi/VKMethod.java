@@ -337,7 +337,8 @@ public class VKMethod {
         JsonElement json = Requests.parseJson(actor.getJsonManager(), response);
 
         if (json.isJsonObject() && json.getAsJsonObject().has(JSON_API_ERROR)) {
-            Error error = parseApiErrorJSON(actor.getJsonManager(), json.getAsJsonObject().get(JSON_API_ERROR));
+            Error error = parseApiErrorJSON(actor.getJsonManager(),
+                    json.getAsJsonObject().get(JSON_API_ERROR));
             throw new ApiException(error);
         }
         return json;

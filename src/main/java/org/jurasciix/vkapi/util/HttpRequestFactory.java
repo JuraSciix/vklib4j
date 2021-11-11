@@ -10,7 +10,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-public class HttpRequestFactory implements Request.Factory {
+public class HttpRequestFactory implements RequestFactory {
 
     private static volatile HttpRequestFactory instance;
 

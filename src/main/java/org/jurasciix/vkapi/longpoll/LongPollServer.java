@@ -6,6 +6,7 @@ import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.jurasciix.vkapi.util.LombokToStringStyle;
 import org.jurasciix.vkapi.util.Request;
+import org.jurasciix.vkapi.util.RequestFactory;
 
 public class LongPollServer {
 
@@ -50,7 +51,7 @@ public class LongPollServer {
         return persistentTimestamp;
     }
 
-    public Request getRequest(Request.Factory requestFactory) {
+    public Request getRequest(RequestFactory requestFactory) {
         String s = server;
         return (s.contains("://")
                 ? requestFactory.newGet(s)
@@ -61,15 +62,17 @@ public class LongPollServer {
     }
 
     public void onResult(LongPolling longPolling, LongPollResult result) throws LongPollServerException {
-        if (result.hasFailed()) {
+        if (result.isFailed()) {
             if (result.getFailed() == LongPolling.FAILED_INCORRECT_TS) {
                 timestamp = result.getTimestamp();
                 return;
             }
-            throw new LongPollServerException(result.getFailed());
+            throw new LongPollServerException(result.getFailed(), result.getMinVersion(), result.getMaxVersion());
         }
         timestamp = result.getTimestamp();
-        persistentTimestamp = result.getPersistentTimestamp();
+        if (result.hasPersistentTimestamp()) {
+            persistentTimestamp = result.getPersistentTimestamp();
+        }
 
         for (JsonElement update : result.getUpdates()) {
             longPolling.onUpdate(update);

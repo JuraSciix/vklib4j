@@ -9,12 +9,20 @@ import org.jurasciix.vkapi.util.LombokToStringStyle;
 public class LongPollResult {
 
     protected static final String JSON_FAILED = "failed";
+    protected static final String JSON_MIN_VERSION = "min_version";
+    protected static final String JSON_MAX_VERSION = "max_version";
     protected static final String JSON_TIMESTAMP = "ts";
     protected static final String JSON_PERSISTENT_TIMESTAMP = "pts";
     protected static final String JSON_UPDATES = "updates";
 
     @SerializedName(JSON_FAILED)
     private Integer failed;
+
+    @SerializedName(JSON_MIN_VERSION)
+    private Integer minVersion;
+
+    @SerializedName(JSON_MAX_VERSION)
+    private Integer maxVersion;
 
     @SerializedName(JSON_TIMESTAMP)
     private String timestamp;
@@ -25,7 +33,7 @@ public class LongPollResult {
     @SerializedName(JSON_UPDATES)
     private JsonArray updates;
 
-    public boolean hasFailed() {
+    public boolean isFailed() {
         return failed != null;
     }
 
@@ -33,8 +41,20 @@ public class LongPollResult {
         return failed;
     }
 
+    public Integer getMinVersion() {
+        return minVersion;
+    }
+
+    public Integer getMaxVersion() {
+        return maxVersion;
+    }
+
     public String getTimestamp() {
         return timestamp;
+    }
+
+    public boolean hasPersistentTimestamp() {
+        return persistentTimestamp != null;
     }
 
     public String getPersistentTimestamp() {

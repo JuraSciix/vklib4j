@@ -9,27 +9,6 @@ import java.util.Map;
 
 public interface Request {
 
-    interface Factory {
-
-        Request newGet();
-
-        Request newGet(String uri);
-
-        Request newGet(URI uri);
-
-        Request newPost();
-
-        Request newPost(String uri);
-
-        Request newPost(URI uri);
-
-        Request newRequest(String method);
-
-        Request newRequest(String method, String uri);
-
-        Request newRequest(String method, URI uri);
-    }
-
     interface Response {
 
         int getStatusCode();

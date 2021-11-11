@@ -12,6 +12,68 @@ import java.util.Optional;
 
 public class UserLongPolling extends LongPolling {
 
+    public static final class Options {
+
+        private boolean needPts = false;
+
+        private Integer groupId = null;
+
+        private int mode = DEFAULT_MODE;
+
+        private int version = DEFAULT_VERSION;
+
+        private int wait = DEFAULT_WAIT;
+
+        Options() {
+            super();
+        }
+
+        public boolean needPts() {
+            return needPts;
+        }
+
+        public Options needPts(boolean needPts) {
+            this.needPts = needPts;
+            return this;
+        }
+
+        public Integer groupId() {
+            return groupId;
+        }
+
+        public Options groupId(Integer groupId) {
+            this.groupId = groupId;
+            return this;
+        }
+
+        public int mode() {
+            return mode;
+        }
+
+        public Options mode(int mode) {
+            this.mode = mode;
+            return this;
+        }
+
+        public int version() {
+            return version;
+        }
+
+        public Options version(int version) {
+            this.version = version;
+            return this;
+        }
+
+        public int wait_() {
+            return wait;
+        }
+
+        public Options wait_(int wait) {
+            this.wait = wait;
+            return this;
+        }
+    }
+
     public static final int MODE_GET_ATTACHMENTS = 2;
     public static final int MODE_GET_EXTENDED = 8;
     public static final int MODE_GET_PTS = 32;
@@ -60,11 +122,14 @@ public class UserLongPolling extends LongPolling {
     protected static final int DEFAULT_MODE = 2;
     protected static final int DEFAULT_WAIT = RECOMMENDED_WAIT;
 
-    private static Map<String, String> buildAdditionalRequestParams(int version, int mode, int wait) {
+    private static Map<String, String> buildAdditionalRequestParams(Options opts) {
         Map<String, String> additionalRequestParameters = new LinkedHashMap<>();
-        additionalRequestParameters.put(HTTP_PARAM_VERSION, Integer.toString(version));
-        additionalRequestParameters.put(HTTP_PARAM_MODE, Integer.toString(mode));
-        additionalRequestParameters.put(HTTP_PARAM_WAIT, Integer.toString(wait));
+        if (opts == null) {
+            return additionalRequestParameters;
+        }
+        additionalRequestParameters.put(HTTP_PARAM_MODE, Integer.toString(opts.mode()));
+        additionalRequestParameters.put(HTTP_PARAM_VERSION, Integer.toString(opts.version()));
+        additionalRequestParameters.put(HTTP_PARAM_WAIT, Integer.toString(opts.wait_()));
         return additionalRequestParameters;
     }
 
@@ -76,6 +141,10 @@ public class UserLongPolling extends LongPolling {
         return name;
     }
 
+    public static Options options() {
+        return new Options();
+    }
+
     private final Integer groupId;
 
     private final boolean needPts;
@@ -84,27 +153,10 @@ public class UserLongPolling extends LongPolling {
         this(actor, null);
     }
 
-    public UserLongPolling(VKActor actor, Integer groupId) {
-        this(actor, groupId, DEFAULT_NEED_PTS);
-    }
-
-    public UserLongPolling(VKActor actor, Integer groupId, boolean needPts) {
-        this(actor, groupId, needPts, DEFAULT_VERSION);
-    }
-
-    public UserLongPolling(VKActor actor, Integer groupId, boolean needPts, int version) {
-        this(actor, groupId, needPts, version, DEFAULT_MODE);
-    }
-
-    public UserLongPolling(VKActor actor, Integer groupId, boolean needPts, int version, int mode) {
-        this(actor, groupId, needPts, mode, version, DEFAULT_WAIT);
-    }
-
-    public UserLongPolling(VKActor actor, Integer groupId, boolean needPts, int version, int mode, int wait) {
-        super(actor, buildAdditionalRequestParams(version, mode, wait));
-        this.groupId = groupId;
-        this.needPts = needPts;
-        setName(buildThreadName());
+    public UserLongPolling(VKActor actor, Options options) {
+        super(actor, buildAdditionalRequestParams(options));
+        groupId = (options == null) ? null : options.groupId();
+        needPts = options != null && options.needPts();
     }
 
     public Integer getGroupId() {

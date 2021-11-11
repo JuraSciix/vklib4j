@@ -3,21 +3,78 @@ package org.jurasciix.vkapi;
 import org.jurasciix.vkapi.util.GsonManager;
 import org.jurasciix.vkapi.util.HttpRequestFactory;
 import org.jurasciix.vkapi.util.JsonManager;
-import org.jurasciix.vkapi.util.Request;
+import org.jurasciix.vkapi.util.RequestFactory;
 
-public class VKActor {
+public final class VKActor {
 
-    public static final String VK_API_VERSION = "5.131";
+    public static final class Builder {
 
-    protected static final Request.Factory DEFAULT_REQUEST_FACTORY = HttpRequestFactory.getInstance();
+        private RequestFactory requestFactory;
 
-    protected static final JsonManager DEFAULT_JSON_MANAGER = GsonManager.getInstance();
+        private JsonManager jsonManager;
 
-    protected static final String DEFAULT_VERSION = VK_API_VERSION;
+        private String accessToken;
 
-    protected static final int DEFAULT_TARGET_ID = 0;
+        private String version;
 
-    private final Request.Factory requestFactory;
+        private Integer targetId;
+
+        Builder() {
+            super();
+        }
+
+        public Builder requestFactory(RequestFactory requestFactory) {
+            this.requestFactory = requestFactory;
+            return this;
+        }
+
+        public Builder jsonManager(JsonManager jsonManager) {
+            this.jsonManager = jsonManager;
+            return this;
+        }
+
+        public Builder accessToken(String accessToken) {
+            this.accessToken = accessToken;
+            return this;
+        }
+
+        public Builder version(String version) {
+            this.version = version;
+            return this;
+        }
+
+        public Builder targetId(Integer targetId) {
+            this.targetId = targetId;
+            return this;
+        }
+
+        public VKActor build() {
+            return new VKActor(requestFactory, jsonManager, accessToken, version, targetId);
+        }
+    }
+
+    private static final RequestFactory DEFAULT_REQUEST_FACTORY = HttpRequestFactory.getInstance();
+    private static final JsonManager DEFAULT_JSON_MANAGER = GsonManager.getInstance();
+
+    public static final String API_VERSION = "5.131";
+
+    public static Builder builder() {
+        return new Builder();
+    }
+
+    public static Builder default_() {
+        Builder builder = builder();
+        builder.requestFactory(DEFAULT_REQUEST_FACTORY);
+        builder.jsonManager(DEFAULT_JSON_MANAGER);
+        builder.version(API_VERSION);
+        return builder;
+    }
+
+    public static VKActor fromAccessToken(String accessToken) {
+        return default_().accessToken(accessToken).build();
+    }
+
+    private final RequestFactory requestFactory;
 
     private final JsonManager jsonManager;
 
@@ -25,57 +82,10 @@ public class VKActor {
 
     private final String version;
 
-    private final int targetId;
+    private final Integer targetId;
 
-    public VKActor(String accessToken) {
-        this(DEFAULT_REQUEST_FACTORY, DEFAULT_JSON_MANAGER, accessToken, DEFAULT_VERSION, DEFAULT_TARGET_ID);
-    }
-
-    public VKActor(String accessToken, int targetId) {
-        this(DEFAULT_REQUEST_FACTORY, DEFAULT_JSON_MANAGER, accessToken, DEFAULT_VERSION, targetId);
-    }
-
-    public VKActor(String accessToken, String version) {
-        this(DEFAULT_REQUEST_FACTORY, DEFAULT_JSON_MANAGER, accessToken, version, DEFAULT_TARGET_ID);
-    }
-
-    public VKActor(String accessToken, String version, int targetId) {
-        this(DEFAULT_REQUEST_FACTORY, DEFAULT_JSON_MANAGER, accessToken, version, targetId);
-    }
-
-    public VKActor(Request.Factory requestFactory, String accessToken) {
-        this(requestFactory, DEFAULT_JSON_MANAGER, accessToken, DEFAULT_VERSION, DEFAULT_TARGET_ID);
-    }
-
-    public VKActor(Request.Factory requestFactory, String accessToken, int targetId) {
-        this(requestFactory, DEFAULT_JSON_MANAGER, accessToken, DEFAULT_VERSION, targetId);
-    }
-
-    public VKActor(Request.Factory requestFactory, String accessToken, String version, int targetId) {
-        this(requestFactory, DEFAULT_JSON_MANAGER, accessToken, version, targetId);
-    }
-
-    public VKActor(JsonManager jsonManager, String accessToken) {
-        this(DEFAULT_REQUEST_FACTORY, jsonManager, accessToken, DEFAULT_VERSION, DEFAULT_TARGET_ID);
-    }
-
-    public VKActor(JsonManager jsonManager, String accessToken, int targetId) {
-        this(DEFAULT_REQUEST_FACTORY, jsonManager, accessToken, DEFAULT_VERSION, targetId);
-    }
-
-    public VKActor(JsonManager jsonManager, String accessToken, String version, int targetId) {
-        this(DEFAULT_REQUEST_FACTORY, jsonManager, accessToken, version, targetId);
-    }
-
-    public VKActor(Request.Factory requestFactory, JsonManager jsonManager, String accessToken) {
-        this(requestFactory, jsonManager, accessToken, DEFAULT_VERSION, DEFAULT_TARGET_ID);
-    }
-
-    public VKActor(Request.Factory requestFactory, JsonManager jsonManager, String accessToken, int targetId) {
-        this(requestFactory, jsonManager, accessToken, DEFAULT_VERSION, targetId);
-    }
-
-    public VKActor(Request.Factory requestFactory, JsonManager jsonManager, String accessToken, String version, int targetId) {
+    VKActor(RequestFactory requestFactory, JsonManager jsonManager, String accessToken, String version,
+            Integer targetId) {
         this.requestFactory = requestFactory;
         this.jsonManager = jsonManager;
         this.accessToken = accessToken;
@@ -83,23 +93,7 @@ public class VKActor {
         this.targetId = targetId;
     }
 
-    public static Request.Factory getDefaultRequestFactory() {
-        return DEFAULT_REQUEST_FACTORY;
-    }
-
-    public static JsonManager getDefaultJsonManager() {
-        return DEFAULT_JSON_MANAGER;
-    }
-
-    public static String getDefaultVersion() {
-        return DEFAULT_VERSION;
-    }
-
-    public static int getDefaultTargetId() {
-        return DEFAULT_TARGET_ID;
-    }
-
-    public Request.Factory getRequestFactory() {
+    public RequestFactory getRequestFactory() {
         return requestFactory;
     }
 
@@ -115,7 +109,17 @@ public class VKActor {
         return version;
     }
 
-    public int getTargetId() {
+    public Integer getTargetId() {
         return targetId;
+    }
+
+    public Builder toBuilder() {
+        Builder builder = builder();
+        builder.requestFactory(requestFactory);
+        builder.jsonManager(jsonManager);
+        builder.accessToken(accessToken);
+        builder.version(version);
+        builder.targetId(targetId);
+        return builder;
     }
 }
