@@ -32,7 +32,7 @@ JVKApi simplifies integration with [VK API](https://vk.com/dev/first_guide) (inc
 Creating a VKActor object using an access token only:
 
 ```java
-VKActor = VKActor.fromAccessToken(ACCESS_TOKEN);
+VKActor actor = VKActor.fromAccessToken(ACCESS_TOKEN);
 ```
 
 Creating a VKActor object using an access token and a user, group, or application ID:
@@ -45,11 +45,11 @@ Creating a VKActor object with own implementations of modules:
 
 ```java
 VKActor actor = VKActor.builder()
-    .requestFactory(ownRequestFactory)
-    .jsonManager(ownJsonManager)
-    .accessToken(ACCESS_TOKEN)
-    .version(API_VERSION)
-    .build();
+        .requestFactory(ownRequestFactory)
+        .jsonManager(ownJsonManager)
+        .accessToken(ACCESS_TOKEN)
+        .version(API_VERSION)
+        .build();
 ```
 
 ### Sending a message
@@ -59,10 +59,10 @@ Sending a message "Hello, VK API!" to chat №1.
 ```java
 try {
     new VKMethod("messages.send")
-        .param("chat_id", 1)
-        .param("random_id", 0)
-        .param("message", "Hello, VK API!")
-        .execute(actor);
+            .param("chat_id", 1)
+            .param("random_id", 0)
+            .param("message", "Hello, VK API!")
+            .execute(actor);
 } catch (ApiException e) {
     e.printStackTrace();
 }
