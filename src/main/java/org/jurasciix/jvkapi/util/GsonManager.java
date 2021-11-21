@@ -27,11 +27,11 @@ public class GsonManager implements JsonManager {
     }
 
     private static IllegalArgumentException wrapJsonParseException(JsonParseException e) {
-        return new IllegalArgumentException("given invalid JSON", e);
+        return new IllegalArgumentException("not a valid JSON passed", e);
     }
 
     private static IllegalArgumentException wrapJsonSyntaxException(JsonSyntaxException e) {
-        return new IllegalArgumentException("given invalid JSON representation", e);
+        return new IllegalArgumentException("not a valid JSON representation passed", e);
     }
 
     private final JsonParser parser;

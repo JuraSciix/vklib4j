@@ -46,11 +46,11 @@ public abstract class UserLongPolling extends LongPolling {
         }
 
         public Options mode(int... modes) {
-            int m = 0;
+            int mode = 0;
             for (int mode : modes) {
-                m |= mode;
+                mode |= mode;
             }
-            this.mode = m;
+            this.mode = mode;
             return this;
         }
 

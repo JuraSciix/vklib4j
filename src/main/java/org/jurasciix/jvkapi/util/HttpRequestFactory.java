@@ -46,6 +46,10 @@ public class HttpRequestFactory implements RequestFactory {
         this.httpClient = httpClient;
     }
 
+    protected final HttpClient getHttpClient() {
+        return httpClient;
+    }
+
     @Override
     public Request create() {
         return new HttpRequest(httpClient, new URIBuilder());

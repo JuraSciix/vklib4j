@@ -119,7 +119,7 @@ public class HttpRequest implements Request {
         return new BasicResponse(content);
     }
 
-    private String executeInternal() throws IOException {
+    protected String executeInternal() throws IOException {
         HttpRequestBase request = new HttpGet(toURI());
         HttpResponse response = httpClient.execute(request);
 
