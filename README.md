@@ -1,11 +1,11 @@
-# JVKApi - Java library for easier working with the VK API.
+# JVKApi is simple library for working with the VK API in Java.
 
-JVKApi simplifies integration with [VK API](https://vk.com/dev/first_guide) (including [User](https://vk.com/dev/using_longpoll) and [Group](https://vk.com/dev/bots_longpoll) Long Polling) through a few interchangeable tools.
+VKApi makes working with [VK API](https://vk.com/dev/first_guide) (including [User](https://vk.com/dev/using_longpoll) and [Group](https://vk.com/dev/bots_longpoll) Long Polling) a little easier.
 
 ## Prerequisites
 
 * [Java JDK](https://www.oracle.com/java/technologies/downloads/) version 1.8 or later.
-* [Maven](https://maven.apache.org/) version 3.6.3 or later.
+* [Maven](https://maven.apache.org/) version 3.6.3.
 
 ## Dependencies
 
