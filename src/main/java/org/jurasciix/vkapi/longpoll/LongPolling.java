@@ -98,6 +98,8 @@ public abstract class LongPolling extends Thread {
                 if ((failed != FAILED_INCORRECT_KEY) && (failed != FAILED_DATA_LOST)) {
                     throw e;
                 }
+                // request server again
+                server = null;
             }
         }
     }
