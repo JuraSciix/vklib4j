@@ -69,9 +69,10 @@ public class LongPollServer {
             throw new IllegalStateException("key is null");
         if (timestamp == null)
             throw new IllegalStateException("timestamp is null");
-        Request request = requestFactory.create(server);
-        if (!server.isAbsolute())
-            request.setScheme("https");
+        // todo
+        Request request = server.getHost() == null ?
+                requestFactory.create().setHost(server.getPath()).setScheme("https") :
+                requestFactory.create(server);
         request.addParameter("act", "a_check");
         request.addParameter("key", key);
         request.addParameter("ts", timestamp.toString());
