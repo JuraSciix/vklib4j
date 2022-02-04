@@ -31,7 +31,8 @@ public abstract class UserLongPolling extends LongPolling {
 
     public static final class Options {
 
-        Integer groupId = null;
+        long groupId;
+        boolean groupIdPresent = false;
         boolean needPts = false;
         int version = DEFAULT_VERSION;
         int mode = DEFAULT_MODE;
@@ -42,7 +43,10 @@ public abstract class UserLongPolling extends LongPolling {
         }
 
         public Options groupId(int groupId) {
+            if (groupId <= 0L)
+                throw new IllegalArgumentException("group id must be positive");
             this.groupId = groupId;
+            this.groupIdPresent = true;
             return this;
         }
 
@@ -119,128 +123,80 @@ public abstract class UserLongPolling extends LongPolling {
     static final int DEFAULT_MODE = MODE_GET_ATTACHMENTS;
     static final int DEFAULT_WAIT = LongPolling.DEFAULT_WAIT;
 
-    private static final String METHOD_GET_SERVER = "messages.getLongPollServer";
-
-    private static final String METHOD_PARAM_GROUP_ID = "group_id";
-    private static final String METHOD_PARAM_NEED_PTS = "need_pts";
-
     private static final int JSON_UPDATE_CODE = 0;
 
     public static Options options() {
         return new Options();
     }
 
-    private final Integer groupId;
+    private final long groupId;
+
+    private final boolean groupIdPresent;
 
     private final boolean needPts;
 
     protected UserLongPolling(VKActor actor) {
         super(actor);
-        groupId = null;
+        groupId = 0L;
+        groupIdPresent = false;
         needPts = false;
     }
 
     protected UserLongPolling(VKActor actor, Options options) {
         super(actor, options.waitTime, options.toAdditionalRequestParams());
-        groupId = options.groupId;
+        if (options.groupIdPresent) {
+            groupId = options.groupId;
+        } else {
+            groupId = 0L;
+        }
+        groupIdPresent = options.groupIdPresent;
         needPts = options.needPts;
     }
 
     @Override
     public LongPollServer getServer() throws ApiException {
-        VKMethod method = new VKMethod(METHOD_GET_SERVER);
-        if (groupId != null) {
-            method.param(METHOD_PARAM_GROUP_ID, groupId);
+        VKMethod method = new VKMethod("messages.getLongPollServer");
+        if (groupIdPresent) {
+            method.param("group_id", groupId);
         }
         if (needPts) {
-            method.param(METHOD_PARAM_NEED_PTS, true);
+            method.param("need_pts", true);
         }
         return method.executeAs(getActor(), LongPollServer.class);
     }
 
     @Override
-    public void onUpdate(JsonElement sourceUpdate) {
-        JsonArray update = sourceUpdate.getAsJsonArray();
-        int code = update.get(JSON_UPDATE_CODE).getAsInt();
+    public void onUpdate(JsonElement update) {
+        JsonArray data = update.getAsJsonArray();
+        int code = data.get(JSON_UPDATE_CODE).getAsInt();
 
         switch (code) {
-            case EVENT_FLAGS_UPDATE:
-                onFlagsUpdate(update);
-                break;
-            case EVENT_FLAGS_SET:
-                onFlagsSet(update);
-                break;
-            case EVENT_FLAGS_RESET:
-                onFlagsReset(update);
-                break;
-            case EVENT_MESSAGE_NEW:
-                onMessageNew(update);
-                break;
-            case EVENT_MESSAGE_EDIT:
-                onMessageEdit(update);
-                break;
-            case EVENT_INCOMING_MESSAGES_READ:
-                onIncomingMessagesRead(update);
-                break;
-            case EVENT_OUTGOING_MESSAGES_READ:
-                onOutgoingMessagesRead(update);
-                break;
-            case EVENT_FRIEND_ONLINE:
-                onFriendOnline(update);
-                break;
-            case EVENT_FRIEND_OFFLINE:
-                onFriendOffline(update);
-                break;
-            case EVENT_PEER_FLAGS_RESET:
-                onPeerFlagsReset(update);
-                break;
-            case EVENT_PEER_FLAGS_UPDATE:
-                onPeerFlagsUpdate(update);
-                break;
-            case EVENT_PEER_FLAGS_SET:
-                onPeerFlagsSet(update);
-                break;
-            case EVENT_MESSAGES_DELETE:
-                onMessagesDelete(update);
-                break;
-            case EVENT_MESSAGES_RESTORE:
-                onMessagesRestore(update);
-                break;
-            case EVENT_MAJOR_ID_UPDATE:
-                onMajorIdUpdate(update);
-                break;
-            case EVENT_MINOR_ID_UPDATE:
-                onMinorIdUpdate(update);
-                break;
-            case EVENT_CHAT_EDIT:
-                onChatEdit(update);
-                break;
-            case EVENT_CHAT_UPDATE:
-                onChatUpdate(update);
-                break;
-            case EVENT_USER_TYPING:
-                onUserTyping(update);
-                break;
-            case EVENT_USER_TYPING_IN_CHAT:
-                onUserTypingInChat(update);
-                break;
-            case EVENT_USERS_TYPING_IN_CHAT:
-                onUsersTypingInChat(update);
-                break;
-            case EVENT_USERS_VOICING_IN_CHAT:
-                onUsersVoicingInChat(update);
-                break;
-            case EVENT_USER_VOICING:
-                onUserVoicing(update);
-                break;
-            case EVENT_COUNTER_UPDATE:
-                onCounterUpdate(update);
-                break;
-            case EVENT_NOTIFICATIONS_EDIT:
-                onNotificationsEdit(update);
-                break;
-            default:
-                onUnknownEvent(update);
+            case EVENT_FLAGS_UPDATE:           onFlagsUpdate(data);          break;
+            case EVENT_FLAGS_SET:              onFlagsSet(data);             break;
+            case EVENT_FLAGS_RESET:            onFlagsReset(data);           break;
+            case EVENT_MESSAGE_NEW:            onMessageNew(data);           break;
+            case EVENT_MESSAGE_EDIT:           onMessageEdit(data);          break;
+            case EVENT_INCOMING_MESSAGES_READ: onIncomingMessagesRead(data); break;
+            case EVENT_OUTGOING_MESSAGES_READ: onOutgoingMessagesRead(data); break;
+            case EVENT_FRIEND_ONLINE:          onFriendOnline(data);         break;
+            case EVENT_FRIEND_OFFLINE:         onFriendOffline(data);        break;
+            case EVENT_PEER_FLAGS_RESET:       onPeerFlagsReset(data);       break;
+            case EVENT_PEER_FLAGS_UPDATE:      onPeerFlagsUpdate(data);      break;
+            case EVENT_PEER_FLAGS_SET:         onPeerFlagsSet(data);         break;
+            case EVENT_MESSAGES_DELETE:        onMessagesDelete(data);       break;
+            case EVENT_MESSAGES_RESTORE:       onMessagesRestore(data);      break;
+            case EVENT_MAJOR_ID_UPDATE:        onMajorIdUpdate(data);        break;
+            case EVENT_MINOR_ID_UPDATE:        onMinorIdUpdate(data);        break;
+            case EVENT_CHAT_EDIT:              onChatEdit(data);             break;
+            case EVENT_CHAT_UPDATE:            onChatUpdate(data);           break;
+            case EVENT_USER_TYPING:            onUserTyping(data);           break;
+            case EVENT_USER_TYPING_IN_CHAT:    onUserTypingInChat(data);     break;
+            case EVENT_USERS_TYPING_IN_CHAT:   onUsersTypingInChat(data);    break;
+            case EVENT_USERS_VOICING_IN_CHAT:  onUsersVoicingInChat(data);   break;
+            case EVENT_USER_VOICING:           onUserVoicing(data);          break;
+            case EVENT_COUNTER_UPDATE:         onCounterUpdate(data);        break;
+            case EVENT_NOTIFICATIONS_EDIT:     onNotificationsEdit(data);    break;
+            default:                           onUnknownEvent(data);
         }
     }
 

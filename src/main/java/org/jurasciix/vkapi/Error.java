@@ -17,20 +17,21 @@
 package org.jurasciix.vkapi;
 
 import com.google.gson.annotations.SerializedName;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.jurasciix.vkapi.util.LombokToStringStyle;
 
 import java.util.List;
+import java.util.Objects;
 
 public class Error {
 
-    private static final String JSON_ERROR_CODE = "error_code";
-    private static final String JSON_ERROR_MESSAGE = "error_msg";
-    private static final String JSON_REQUEST_PARAMS = "request_params";
-    private static final String JSON_CAPTCHA_URL = "captcha_img";
-    private static final String JSON_CAPTCHA_SID = "captcha_sid";
+    public static final String JSON_ERROR_CODE = "error_code";
+
+    public static final String JSON_ERROR_MESSAGE = "error_msg";
+
+    public static final String JSON_REQUEST_PARAMS = "request_params";
+
+    public static final String JSON_CAPTCHA_URL = "captcha_img";
+
+    public static final String JSON_CAPTCHA_SID = "captcha_sid";
 
     @SerializedName(JSON_ERROR_CODE)
     private int code;
@@ -89,44 +90,43 @@ public class Error {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Error another = (Error) o;
-        EqualsBuilder builder = new EqualsBuilder();
-        builder.append(code, another.code);
-        builder.append(captchaSid, another.captchaSid);
-        builder.append(message, another.message);
-        builder.append(requestParams, another.requestParams);
-        builder.append(captchaUrl, another.captchaUrl);
-        return builder.isEquals();
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        Error e = (Error) o;
+        return (code == e.code &&
+                Objects.equals(message, e.message) &&
+                Objects.equals(requestParams, e.requestParams) &&
+                Objects.equals(captchaUrl, e.captchaUrl) &&
+                captchaSid == e.captchaSid);
     }
 
     @Override
     public int hashCode() {
-        HashCodeBuilder builder = new HashCodeBuilder();
-        builder.append(code);
-        builder.append(message);
-        builder.append(requestParams);
-        builder.append(captchaUrl);
-        builder.append(captchaSid);
-        return builder.toHashCode();
+        return ((((Integer.hashCode(code)) * 31 +
+                Objects.hashCode(message)) * 31 +
+                Objects.hashCode(requestParams)) * 31 +
+                Objects.hashCode(captchaUrl)) * 31 +
+                Long.hashCode(captchaSid);
     }
 
     @Override
     public String toString() {
-        ToStringBuilder builder = LombokToStringStyle.getToStringBuilder(this);
-        builder.append("code", code);
-        builder.append("message", message);
-        builder.append("requestParams", requestParams);
-        builder.append("captchaImage", captchaUrl);
-        builder.append("captchaSid", captchaSid);
-        return builder.toString();
+        return getClass().getName() + '(' +
+                "code=" + code + ',' +
+                "message=" + message + ',' +
+                "requestParams=" + requestParams + ',' +
+                "captchaUrl=" + captchaUrl + ',' +
+                "captchaSid=" + captchaSid +
+                ')';
     }
 
     public static class RequestParam {
 
-        private static final String JSON_KEY = "key";
-        private static final String JSON_VALUE = "value";
+        public static final String JSON_KEY = "key";
+
+        public static final String JSON_VALUE = "value";
 
         @SerializedName(JSON_KEY)
         private String key;
@@ -152,29 +152,25 @@ public class Error {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            RequestParam another = (RequestParam) o;
-            EqualsBuilder builder = new EqualsBuilder();
-            builder.append(key, another.key);
-            builder.append(value, another.value);
-            return builder.isEquals();
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+            RequestParam p = (RequestParam) o;
+            return Objects.equals(key, p.key) && Objects.equals(value, p.value);
         }
 
         @Override
         public int hashCode() {
-            HashCodeBuilder builder = new HashCodeBuilder();
-            builder.append(key);
-            builder.append(value);
-            return builder.toHashCode();
+            return Objects.hashCode(key) * 31 + Objects.hashCode(value);
         }
 
         @Override
         public String toString() {
-            ToStringBuilder builder = LombokToStringStyle.getToStringBuilder(this);
-            builder.append("key", key);
-            builder.append("value", value);
-            return builder.toString();
+            return getClass().getName() + '(' +
+                    "key=" + key + ',' +
+                    "value=" + value +
+                    ')';
         }
     }
 }

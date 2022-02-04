@@ -21,53 +21,63 @@ import org.jurasciix.vkapi.util.HttpRequestFactory;
 import org.jurasciix.vkapi.util.JsonManager;
 import org.jurasciix.vkapi.util.RequestFactory;
 
-public final class VKActor {
+import java.util.NoSuchElementException;
+import java.util.Objects;
 
-    public static final String API_VERSION = "5.131";
+public final class VKActor {
 
     public static final class Builder {
 
-        private RequestFactory requestFactory;
-        private JsonManager jsonManager;
-        private String accessToken;
-        private String version;
-        private Integer targetId;
+        private RequestFactory requestFactory = null;
+
+        private JsonManager jsonManager = null;
+
+        private String accessToken = null;
+
+        private String version = null;
+
+        private long id;
+
+        private boolean idPresent = false;
 
         Builder() {
             super();
         }
 
         public Builder requestFactory(RequestFactory requestFactory) {
-            this.requestFactory = requestFactory;
+            this.requestFactory = Objects.requireNonNull(requestFactory);
             return this;
         }
 
         public Builder jsonManager(JsonManager jsonManager) {
-            this.jsonManager = jsonManager;
+            this.jsonManager = Objects.requireNonNull(jsonManager);
             return this;
         }
 
         public Builder accessToken(String accessToken) {
-            this.accessToken = accessToken;
+            this.accessToken = Objects.requireNonNull(accessToken);
             return this;
         }
 
         public Builder version(String version) {
-            this.version = version;
+            this.version = Objects.requireNonNull(version);
             return this;
         }
 
-        public Builder targetId(int targetId) {
-            this.targetId = targetId;
+        public Builder id(long id) {
+            if (id == 0L)
+                throw new IllegalArgumentException("id must be not equal to zero");
+            this.id = id;
+            this.idPresent = true;
             return this;
         }
 
         public VKActor build() {
-            checkNulls();
-            return new VKActor(requestFactory, jsonManager, accessToken, version, targetId);
+            checkFields();
+            return new VKActor(requestFactory, jsonManager, accessToken, version, id, idPresent);
         }
 
-        private void checkNulls() {
+        private void checkFields() {
             if (requestFactory == null) {
                 throw new IllegalStateException("request factory must be not null");
             }
@@ -83,15 +93,22 @@ public final class VKActor {
         }
     }
 
+    /**
+     * Current supported version of the VK API.
+     */
+    public static final String API_VERSION = "5.131";
+
     private static final RequestFactory DEFAULT_REQUEST_FACTORY = HttpRequestFactory.getInstance();
+
     private static final JsonManager DEFAULT_JSON_MANAGER = GsonManager.getInstance();
+
     private static final String DEFAULT_VERSION = API_VERSION;
 
     public static Builder builder() {
         return new Builder();
     }
 
-    public static Builder default_() {
+    public static Builder defaultBuilder() {
         Builder builder = builder();
         builder.requestFactory(DEFAULT_REQUEST_FACTORY);
         builder.jsonManager(DEFAULT_JSON_MANAGER);
@@ -99,27 +116,33 @@ public final class VKActor {
         return builder;
     }
 
-    public static VKActor fromAccessToken(String accessToken) {
-        return default_().accessToken(accessToken).build();
+    public static VKActor withAccessToken(String accessToken) {
+        return defaultBuilder().accessToken(accessToken).build();
     }
 
-    public static VKActor fromAccessTokenAndId(String accessToken, int targetId) {
-        return default_().accessToken(accessToken).targetId(targetId).build();
+    public static VKActor withAccessTokenAndId(String accessToken, long id) {
+        return defaultBuilder().accessToken(accessToken).id(id).build();
     }
 
     private final RequestFactory requestFactory;
-    private final JsonManager jsonManager;
-    private final String accessToken;
-    private final String version;
-    private final Integer targetId;
 
-    VKActor(RequestFactory requestFactory, JsonManager jsonManager, String accessToken, String version,
-            Integer targetId) {
+    private final JsonManager jsonManager;
+
+    private final String accessToken;
+
+    private final String version;
+
+    private final long id;
+
+    private final boolean idPresent;
+
+    VKActor(RequestFactory requestFactory, JsonManager jsonManager, String accessToken, String version, long id, boolean idPresent) {
         this.requestFactory = requestFactory;
         this.jsonManager = jsonManager;
         this.accessToken = accessToken;
         this.version = version;
-        this.targetId = targetId;
+        this.id = id;
+        this.idPresent = idPresent;
     }
 
     public RequestFactory getRequestFactory() {
@@ -138,8 +161,15 @@ public final class VKActor {
         return version;
     }
 
-    public Integer getTargetId() {
-        return targetId;
+    public long getId() {
+        if (idPresent)
+            return id;
+        else
+            throw new NoSuchElementException("id not present");
+    }
+
+    public boolean isIdPresent() {
+        return idPresent;
     }
 
     public Builder toBuilder() {
@@ -148,7 +178,8 @@ public final class VKActor {
         builder.jsonManager(jsonManager);
         builder.accessToken(accessToken);
         builder.version(version);
-        builder.targetId(targetId);
+        if (idPresent)
+            builder.id(id);
         return builder;
     }
 }

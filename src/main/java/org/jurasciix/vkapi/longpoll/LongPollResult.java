@@ -18,19 +18,22 @@ package org.jurasciix.vkapi.longpoll;
 
 import com.google.gson.JsonArray;
 import com.google.gson.annotations.SerializedName;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.jurasciix.vkapi.util.LombokToStringStyle;
+
+import java.util.Objects;
 
 public class LongPollResult {
 
-    private static final String JSON_FAILED = "failed";
-    private static final String JSON_MIN_VERSION = "min_version";
-    private static final String JSON_MAX_VERSION = "max_version";
-    private static final String JSON_TIMESTAMP = "ts";
-    private static final String JSON_PERSISTENT_TIMESTAMP = "pts";
-    private static final String JSON_UPDATES = "updates";
+    public static final String JSON_FAILED = "failed";
+
+    public static final String JSON_MIN_VERSION = "min_version";
+
+    public static final String JSON_MAX_VERSION = "max_version";
+
+    public static final String JSON_TIMESTAMP = "ts";
+
+    public static final String JSON_PERSISTENT_TIMESTAMP = "pts";
+
+    public static final String JSON_UPDATES = "updates";
 
     @SerializedName(JSON_FAILED)
     private Integer failed;
@@ -42,10 +45,10 @@ public class LongPollResult {
     private Integer maxVersion;
 
     @SerializedName(JSON_TIMESTAMP)
-    private String timestamp;
+    private Long timestamp;
 
     @SerializedName(JSON_PERSISTENT_TIMESTAMP)
-    private String persistentTimestamp;
+    private Long persistentTimestamp;
 
     @SerializedName(JSON_UPDATES)
     private JsonArray updates;
@@ -66,7 +69,7 @@ public class LongPollResult {
         return maxVersion;
     }
 
-    public String getTimestamp() {
+    public Long getTimestamp() {
         return timestamp;
     }
 
@@ -74,7 +77,7 @@ public class LongPollResult {
         return persistentTimestamp != null;
     }
 
-    public String getPersistentTimestamp() {
+    public Long getPersistentTimestamp() {
         return persistentTimestamp;
     }
 
@@ -84,40 +87,38 @@ public class LongPollResult {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        LongPollResult another = (LongPollResult) o;
-        EqualsBuilder builder = new EqualsBuilder();
-        builder.append(failed, another.failed);
-        builder.append(minVersion, another.minVersion);
-        builder.append(maxVersion, another.maxVersion);
-        builder.append(timestamp, another.timestamp);
-        builder.append(persistentTimestamp, another.persistentTimestamp);
-        builder.append(updates, another.updates);
-        return builder.isEquals();
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        LongPollResult r = (LongPollResult) o;
+        return (Objects.equals(failed, r.failed) &&
+                Objects.equals(minVersion, r.minVersion) &&
+                Objects.equals(maxVersion, r.maxVersion) &&
+                Objects.equals(timestamp, r.timestamp) &&
+                Objects.equals(persistentTimestamp, r.persistentTimestamp) &&
+                Objects.equals(updates, r.updates));
     }
 
     @Override
     public int hashCode() {
-        HashCodeBuilder builder = new HashCodeBuilder();
-        builder.append(failed);
-        builder.append(minVersion);
-        builder.append(maxVersion);
-        builder.append(timestamp);
-        builder.append(persistentTimestamp);
-        builder.append(updates);
-        return builder.toHashCode();
+        return (((((Objects.hashCode(failed)) * 31 +
+                Objects.hashCode(minVersion)) * 31 +
+                Objects.hashCode(maxVersion)) * 31 +
+                Objects.hashCode(timestamp)) * 31 +
+                Objects.hashCode(persistentTimestamp)) * 31 +
+                Objects.hashCode(updates);
     }
 
     @Override
     public String toString() {
-        ToStringBuilder builder = LombokToStringStyle.getToStringBuilder(this);
-        builder.append("failed", failed);
-        builder.append("minVersion", minVersion);
-        builder.append("maxVersion", maxVersion);
-        builder.append("timestamp", timestamp);
-        builder.append("persistentTimestamp", persistentTimestamp);
-        builder.append("updates", updates);
-        return builder.toString();
+        return getClass().getName() + '(' +
+                "failed=" + failed + ',' +
+                "minVersion=" + minVersion + ',' +
+                "maxVersion=" + maxVersion + ',' +
+                "timestamp=" + timestamp + ',' +
+                "persistentTimestamp=" + persistentTimestamp + ',' +
+                "updates=" + updates + ',' +
+                ')';
     }
 }
