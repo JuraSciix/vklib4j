@@ -1,12 +1,28 @@
-package org.jurasciix.jvkapi.longpoll;
+/*
+ * Copyright 2022-2022, JuraSciix.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package org.jurasciix.vkapi.longpoll;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
-import org.jurasciix.jvkapi.ApiException;
-import org.jurasciix.jvkapi.VKActor;
-import org.jurasciix.jvkapi.VKMethod;
+import org.jurasciix.vkapi.ApiException;
+import org.jurasciix.vkapi.VKActor;
+import org.jurasciix.vkapi.VKMethod;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -47,8 +63,8 @@ public abstract class UserLongPolling extends LongPolling {
 
         public Options mode(int... modes) {
             int mode = 0;
-            for (int mode : modes) {
-                mode |= mode;
+            for (int m : modes) {
+                mode |= m;
             }
             this.mode = mode;
             return this;
