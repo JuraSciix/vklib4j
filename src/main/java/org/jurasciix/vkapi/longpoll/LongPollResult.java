@@ -53,35 +53,35 @@ public class LongPollResult {
     @SerializedName(JSON_UPDATES)
     private JsonArray updates;
 
-    public boolean isFailed() {
+    public final boolean isFailed() {
         return failed != null;
     }
 
-    public Integer getFailed() {
+    public final Integer getFailed() {
         return failed;
     }
 
-    public Integer getMinVersion() {
+    public final Integer getMinVersion() {
         return minVersion;
     }
 
-    public Integer getMaxVersion() {
+    public final Integer getMaxVersion() {
         return maxVersion;
     }
 
-    public Long getTimestamp() {
+    public final Long getTimestamp() {
         return timestamp;
     }
 
-    public boolean hasPersistentTimestamp() {
+    public final boolean hasPersistentTimestamp() {
         return persistentTimestamp != null;
     }
 
-    public Long getPersistentTimestamp() {
+    public final Long getPersistentTimestamp() {
         return persistentTimestamp;
     }
 
-    public JsonArray getUpdates() {
+    public final JsonArray getUpdates() {
         return updates;
     }
 
