@@ -17,14 +17,10 @@
 package org.jurasciix.vkapi;
 
 import com.google.gson.JsonElement;
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.jurasciix.vkapi.object.BoolInt;
 import org.jurasciix.vkapi.object.Lang;
-import org.jurasciix.vkapi.util.LombokToStringStyle;
 import org.jurasciix.vkapi.util.Request;
 
 import java.lang.reflect.Type;
@@ -105,6 +101,7 @@ public class VKMethod {
 
     private final String name;
 
+    // todo: replace it with URIBuilder
     private final List<NameValuePair> params;
 
     public VKMethod(String name) {
@@ -116,8 +113,8 @@ public class VKMethod {
     }
 
     protected VKMethod(String name, List<NameValuePair> params) {
-        this.name = name;
-        this.params = params;
+        this.name = Objects.requireNonNull(name, "method name");
+        this.params = Objects.requireNonNull(params, "method params");
     }
 
     public final String getName() {
@@ -338,28 +335,26 @@ public class VKMethod {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        VKMethod another = (VKMethod) o;
-        EqualsBuilder builder = new EqualsBuilder();
-        builder.append(name, another.name);
-        builder.append(params, another.params);
-        return builder.isEquals();
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        VKMethod m = (VKMethod) o;
+        // name and params should not be null
+        return name.equals(m.name) && params.equals(m.params);
     }
 
     @Override
     public int hashCode() {
-        HashCodeBuilder builder = new HashCodeBuilder();
-        builder.append(name);
-        builder.append(params);
-        return builder.toHashCode();
+        // name and params should not be null
+        return name.hashCode() * 31 + params.hashCode();
     }
 
     @Override
     public String toString() {
-        ToStringBuilder builder = LombokToStringStyle.getToStringBuilder(this);
-        builder.append("name", name);
-        builder.append("params", params);
-        return builder.toString();
+        return getClass().getName() + '(' +
+                "name=" + name + ',' +
+                "params=" + params +
+                ')';
     }
 }

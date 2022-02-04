@@ -16,8 +16,6 @@
 
 package org.jurasciix.vkapi.util;
 
-import org.apache.commons.lang3.builder.EqualsBuilder;
-import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;
 import org.apache.http.NameValuePair;
@@ -31,6 +29,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.List;
+import java.util.Objects;
 
 public class HttpRequest implements Request {
 
@@ -39,8 +38,8 @@ public class HttpRequest implements Request {
     private final URIBuilder builder;
 
     protected HttpRequest(HttpClient httpClient, URIBuilder builder) {
-        this.httpClient = httpClient;
-        this.builder = builder;
+        this.httpClient = Objects.requireNonNull(httpClient, "http client");
+        this.builder = Objects.requireNonNull(builder, "uri builder");
     }
 
     protected final HttpClient getHttpClient() {
@@ -159,21 +158,19 @@ public class HttpRequest implements Request {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        HttpRequest another = (HttpRequest) o;
-        EqualsBuilder builder = new EqualsBuilder();
-        builder.append(httpClient, another.httpClient);
-        builder.append(builder, another.builder);
-        return builder.isEquals();
+        if (this == o)
+            return true;
+        if (o == null || getClass() != o.getClass())
+            return false;
+        HttpRequest r = (HttpRequest) o;
+        // httpClient and builder should not be null
+        return httpClient.equals(r.httpClient) && builder.equals(r.builder);
     }
 
     @Override
     public int hashCode() {
-        HashCodeBuilder builder = new HashCodeBuilder();
-        builder.append(httpClient);
-        builder.append(builder);
-        return builder.toHashCode();
+        // httpClient and builder should not be null
+        return httpClient.hashCode() * 31 + builder.hashCode();
     }
 
     @Override
@@ -196,19 +193,18 @@ public class HttpRequest implements Request {
 
         @Override
         public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-            BasicResponse another = (BasicResponse) o;
-            EqualsBuilder builder = new EqualsBuilder();
-            builder.append(content, another.content);
-            return builder.isEquals();
+            if (this == o)
+                return true;
+            if (o == null || getClass() != o.getClass())
+                return false;
+            // content should not be null
+            return content.equals(((BasicResponse) o).content);
         }
 
         @Override
         public int hashCode() {
-            HashCodeBuilder builder = new HashCodeBuilder();
-            builder.append(content);
-            return builder.toHashCode();
+            // content should not be null
+            return content.hashCode();
         }
 
         @Override

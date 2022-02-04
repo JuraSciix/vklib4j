@@ -72,6 +72,11 @@ public class HttpRequestFactory implements RequestFactory {
     }
 
     @Override
+    public Request create(URI uri) {
+        return new HttpRequest(httpClient, new URIBuilder(uri));
+    }
+
+    @Override
     public Request create(String uri) {
         return new HttpRequest(httpClient, new URIBuilder(URI.create(uri)));
     }
