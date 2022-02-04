@@ -4,51 +4,39 @@ VKApi makes working with [VK API](https://vk.com/dev/first_guide) (including [Us
 
 ## Prerequisites
 
-* [Java JDK](https://www.oracle.com/java/technologies/downloads/) version 1.8 or later.
-* [Maven](https://maven.apache.org/) version 3.6.3.
+* [Java JDK](https://www.oracle.com/java/technologies/downloads/) version 1.8 or later
+* [Maven](https://maven.apache.org/) version 3.6.3
 
 ## Dependencies
 
-* [Google Gson](https://github.com/google/gson) version 2.8.5 (built-in)
-* [Apache Commons-Lang](https://commons.apache.org/proper/commons-lang/) version 3.4 (built-in)
+* [Google Gson](https://github.com/google/gson) version 2.8.6
 * [Apache Http Client](https://hc.apache.org/httpcomponents-client-4.5.x/) version 4.5.13
-
-### Maven
-
-```xml
-<dependencies>
-    <dependency>
-        <groupId>org.apache.httpcomponents</groupId>
-        <artifactId>httpclient</artifactId>
-        <version>4.5.13</version>
-    </dependency>
-</dependencies>
-```
 
 ## Examples
 
 ### Initialization
 
-Creating a VKActor object using an access token only:
+Creating the VKActor object using access token only:
 
 ```java
-VKActor actor = VKActor.fromAccessToken(ACCESS_TOKEN);
+VKActor actor = VKActor.withAccessToken(ACCESS_TOKEN);
 ```
 
-Creating a VKActor object using an access token and a user, group, or application ID:
+Creating the VKActor object using access token and user/group/application id:
 
 ```java
-VKActor actor = VKActor.fromAccessTokenAndId(ACCESS_TOKEN, TARGET_ID)
+VKActor actor = VKActor.withAccessTokenAndId(ACCESS_TOKEN, ID)
 ```
 
-Creating a VKActor object with own implementations of modules:
+Creating the VKActor object in the builder:
 
 ```java
 VKActor actor = VKActor.builder()
-        .requestFactory(ownRequestFactory)
-        .jsonManager(ownJsonManager)
+        .requestFactory(customRequestFactory)
+        .jsonManager(customJsonManager)
         .accessToken(ACCESS_TOKEN)
         .version(API_VERSION)
+        .id(ID)
         .build();
 ```
 
@@ -74,9 +62,20 @@ Receiving and processing events from the VKontakte community
 
 ```java
 LongPolling longPolling = new GroupLongPolling(actor) {
+
+    @Override
+    protected void onGroupJoin(JsonObject data) {
+        System.out.println("User join: " + data.getAsJsonObject("object"));
+    }
+    
+    @Override
+    protected void onGroupLeave(JsonObject data) {
+        System.out.println("User leave: " + data.getAsJsonObject("object"));
+    }
+    
     @Override
     protected void onMessageNew(JsonObject data) {
-        System.out.println(data);
+        System.out.println("New message: " + data.getAsJsonObject("object"));
     }
 };
 longPolling.start();
@@ -89,9 +88,20 @@ Receiving and processing events from the VKontakte User.
 
 ```java
 LongPolling longPolling = new UserLongPolling(actor) {
+    
+    @Override
+    protected void onFriendOnline(JsonArray data) {
+        System.out.println("Friend became online: " + data);
+    }
+
+    @Override
+    protected void onFriendOffline(JsonArray data) {
+        System.out.println("Friend became offline: " + data);
+    }
+
     @Override
     protected void onMessageNew(JsonArray data) {
-        System.out.println(data);
+        System.out.println("New message: " + data);
     }
 };
 longPolling.start();
