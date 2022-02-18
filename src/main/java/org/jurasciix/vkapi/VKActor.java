@@ -22,8 +22,6 @@ public final class VKActor {
 
         private long id;
 
-        private boolean idPresent = false;
-
         Builder() {
             super();
         }
@@ -52,13 +50,12 @@ public final class VKActor {
             if (id == 0L)
                 throw new IllegalArgumentException("id must be not equal to zero");
             this.id = id;
-            this.idPresent = true;
             return this;
         }
 
         public VKActor build() {
             checkFields();
-            return new VKActor(requestFactory, jsonManager, accessToken, version, id, idPresent);
+            return new VKActor(requestFactory, jsonManager, accessToken, version, id);
         }
 
         private void checkFields() {
@@ -118,15 +115,12 @@ public final class VKActor {
 
     private final long id;
 
-    private final boolean idPresent;
-
-    VKActor(RequestFactory requestFactory, JsonManager jsonManager, String accessToken, String version, long id, boolean idPresent) {
+    VKActor(RequestFactory requestFactory, JsonManager jsonManager, String accessToken, String version, long id) {
         this.requestFactory = requestFactory;
         this.jsonManager = jsonManager;
         this.accessToken = accessToken;
         this.version = version;
         this.id = id;
-        this.idPresent = idPresent;
     }
 
     public RequestFactory getRequestFactory() {
@@ -146,14 +140,14 @@ public final class VKActor {
     }
 
     public long getId() {
-        if (idPresent)
+        if (isIdPresent())
             return id;
         else
             throw new NoSuchElementException("id not present");
     }
 
     public boolean isIdPresent() {
-        return idPresent;
+        return id != 0L;
     }
 
     public Builder toBuilder() {
@@ -162,7 +156,7 @@ public final class VKActor {
         builder.jsonManager(jsonManager);
         builder.accessToken(accessToken);
         builder.version(version);
-        if (idPresent)
+        if (id != 0L)
             builder.id(id);
         return builder;
     }
