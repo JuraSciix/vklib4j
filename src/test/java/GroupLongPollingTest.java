@@ -1,21 +1,30 @@
 import com.google.gson.JsonObject;
 import org.jurasciix.vkapi.ApiException;
 import org.jurasciix.vkapi.VKActor;
+import org.jurasciix.vkapi.VKApi;
 import org.jurasciix.vkapi.VKMethod;
 import org.jurasciix.vkapi.longpoll.GroupLongPolling;
 import org.jurasciix.vkapi.longpoll.LongPollServer;
 import org.jurasciix.vkapi.longpoll.LongPolling;
+import org.jurasciix.vkapi.util.GsonManager;
+import org.jurasciix.vkapi.util.HttpRequestFactory;
 
 public class GroupLongPollingTest {
 
     private static final String ACCESS_TOKEN = "";
 
     public static void main(String[] args) throws ApiException, InterruptedException {
-        VKActor actor = VKActor.withAccessToken(ACCESS_TOKEN);
+        VKApi api = VKApi.builder()
+                .jsonManager(GsonManager.getInstance())
+                .requestFactory(HttpRequestFactory.getInstance())
+                .version("5.131").build();
+        VKActor actor = VKActor.builder()
+                .api(api)
+                .accessToken(ACCESS_TOKEN).build();
         System.out.println("Resolving group id...");
         long groupId = new VKMethod("groups.getById").execute(actor)
                 .getAsJsonArray().get(0).getAsJsonObject().get("id").getAsLong();
-        actor = VKActor.withAccessTokenAndId(ACCESS_TOKEN, groupId);
+        actor = actor.toBuilder().id(groupId).build();
         LongPolling longPolling = new GroupLongPolling(actor) {
             @Override
             public LongPollServer getServer() throws ApiException {

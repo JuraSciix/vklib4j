@@ -89,7 +89,7 @@ public abstract class LongPolling extends Thread {
     }
 
     protected Request.Response doRequestServer(LongPollServer server) {
-        Request request = server.createRequest(actor.getRequestFactory());
+        Request request = server.createRequest(actor.getApi().getRequestFactory());
         List<NameValuePair> additionalParameters = additionalRequestParams;
         if (additionalParameters != null) {
             request.addParameters(additionalParameters);
@@ -99,7 +99,7 @@ public abstract class LongPolling extends Thread {
 
     protected void doHandleResponse(LongPollServer server, Request.Response response)
             throws LongPollServerException {
-        LongPollResult result = actor.getJsonManager()
+        LongPollResult result = actor.getApi().getJsonManager()
                 .fromJson(response.getContent(), LongPollResult.class);
         server.onResult(this, result);
     }

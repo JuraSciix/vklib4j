@@ -1,10 +1,13 @@
 import com.google.gson.JsonArray;
 import org.jurasciix.vkapi.ApiException;
 import org.jurasciix.vkapi.VKActor;
+import org.jurasciix.vkapi.VKApi;
 import org.jurasciix.vkapi.VKMethod;
 import org.jurasciix.vkapi.longpoll.LongPollServer;
 import org.jurasciix.vkapi.longpoll.LongPolling;
 import org.jurasciix.vkapi.longpoll.UserLongPolling;
+import org.jurasciix.vkapi.util.GsonManager;
+import org.jurasciix.vkapi.util.HttpRequestFactory;
 
 public class UserLongPollingTest {
 
@@ -12,7 +15,14 @@ public class UserLongPollingTest {
 
     public static void main(String[] args) throws InterruptedException {
         System.out.println("Starting...");
-        VKActor actor = VKActor.withAccessToken(ACCESS_TOKEN);
+        VKApi api = VKApi.builder()
+                .jsonManager(GsonManager.getInstance())
+                .requestFactory(HttpRequestFactory.getInstance())
+                .version("5.131").build();
+        VKActor actor = VKActor.builder()
+                .api(api)
+                .accessToken(ACCESS_TOKEN)
+                .build();
         LongPolling longPolling = new UserLongPolling(actor, UserLongPolling.options()
                 .version(10)
                 .mode(UserLongPolling.MODE_GET_ATTACHMENTS)) {

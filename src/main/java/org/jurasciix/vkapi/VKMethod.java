@@ -23,10 +23,6 @@ public class VKMethod {
         String value();
     }
 
-    private static final String HTTP_SCHEME = "https";
-    private static final String HTTP_HOST = "api.vk.com";
-    private static final String HTTP_PATH_METHOD = "method";
-
     private static final String PARAM_ACCESS_TOKEN = "access_token";
     private static final String PARAM_VERSION = "v";
 
@@ -264,12 +260,12 @@ public class VKMethod {
 
     public <T> T executeAs(VKActor actor, Type type) throws ApiException {
         JsonElement result = execute(actor);
-        return actor.getJsonManager().fromJson(result, type);
+        return actor.getApi().getJsonManager().fromJson(result, type);
     }
 
     public <T> T executeAs(VKActor actor, Class<T> clazz) throws ApiException {
         JsonElement result = execute(actor);
-        return actor.getJsonManager().fromJson(result, clazz);
+        return actor.getApi().getJsonManager().fromJson(result, clazz);
     }
 
     public JsonElement execute(VKActor actor) throws ApiException {
@@ -283,21 +279,21 @@ public class VKMethod {
 
     public <T> T executeRawAs(VKActor actor, Type type) throws ApiException {
         JsonElement result = executeRaw(actor);
-        return actor.getJsonManager().fromJson(result, type);
+        return actor.getApi().getJsonManager().fromJson(result, type);
     }
 
     public <T> T executeRawAs(VKActor actor, Class<T> clazz) throws ApiException {
         JsonElement result = executeRaw(actor);
-        return actor.getJsonManager().fromJson(result, clazz);
+        return actor.getApi().getJsonManager().fromJson(result, clazz);
     }
 
     public JsonElement executeRaw(VKActor actor) throws ApiException {
         Request.Response response = doExecuteRequest(actor);
-        JsonElement json = actor.getJsonManager().parseJson(response.getContent());
+        JsonElement json = actor.getApi().getJsonManager().parseJson(response.getContent());
 
         if (json.isJsonObject() && json.getAsJsonObject().has(JSON_API_ERROR)) {
             JsonElement errorJson = json.getAsJsonObject().get(JSON_API_ERROR);
-            Error error = actor.getJsonManager().fromJson(errorJson, Error.class);
+            Error error = actor.getApi().getJsonManager().fromJson(errorJson, Error.class);
             throw new ApiException(error);
         }
         return json;
@@ -307,12 +303,10 @@ public class VKMethod {
         if (actor == null) {
             throw new IllegalArgumentException("actor must be not null");
         }
-        Request request = actor.getRequestFactory().create();
-        request.setScheme(HTTP_SCHEME);
-        request.setHost(HTTP_HOST);
-        request.setPathSegments(HTTP_PATH_METHOD, name);
+        Request request = actor.getApi().createApiRequest();
+        request.addPathSegment(name);
         request.addParameter(PARAM_ACCESS_TOKEN, actor.getAccessToken());
-        request.addParameter(PARAM_VERSION, actor.getVersion());
+        request.addParameter(PARAM_VERSION, actor.getApi().getVersion());
         request.addParameters(params);
         return request.execute();
     }
