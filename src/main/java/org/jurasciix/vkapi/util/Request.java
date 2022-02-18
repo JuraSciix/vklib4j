@@ -26,6 +26,8 @@ public interface Request {
 
     Request setPathSegments(List<String> pathSegments);
 
+    Request addPathSegment(String pathSegment);
+
     Request addParameter(String name, String value);
 
     Request setParameter(String name, String value);

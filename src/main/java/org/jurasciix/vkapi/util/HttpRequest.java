@@ -77,6 +77,12 @@ public class HttpRequest implements Request {
     }
 
     @Override
+    public Request addPathSegment(String pathSegment) {
+        builder.setPathSegments(builder.getPath(), pathSegment);
+        return this;
+    }
+
+    @Override
     public Request addParameter(String name, String value) {
         builder.addParameter(name, value);
         return this;
