@@ -1,4 +1,6 @@
-package org.jurasciix.vkapi;
+package org.jurasciix.vkapi.exception;
+
+import org.jurasciix.vkapi.model.Error;
 
 public class ApiException extends Exception {
 
@@ -13,15 +15,15 @@ public class ApiException extends Exception {
     }
 
     public int getErrorCode() {
-        return getError().getCode();
+        return error.getCode();
     }
 
     public String getErrorMessage() {
-        return getError().getMessage();
+        return error.getMessage();
     }
 
     @Override
     public String getMessage() {
-        return String.format("[%d] %s", getErrorCode(), getErrorMessage());
+        return getErrorCode() + ": \"" + getErrorMessage() + "\"";
     }
 }

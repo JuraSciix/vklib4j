@@ -1,4 +1,4 @@
-package org.jurasciix.vkapi.object;
+package org.jurasciix.vkapi.model.param;
 
 import com.google.gson.annotations.SerializedName;
 import org.jurasciix.vkapi.VKMethod;

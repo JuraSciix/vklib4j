@@ -2,7 +2,7 @@ package org.jurasciix.vkapi.longpoll;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import org.jurasciix.vkapi.ApiException;
+import org.jurasciix.vkapi.exception.ApiException;
 import org.jurasciix.vkapi.VKActor;
 import org.jurasciix.vkapi.VKMethod;
 

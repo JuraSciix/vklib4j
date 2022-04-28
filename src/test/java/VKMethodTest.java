@@ -1,4 +1,4 @@
-import org.jurasciix.vkapi.ApiException;
+import org.jurasciix.vkapi.exception.ApiException;
 import org.jurasciix.vkapi.VKActor;
 import org.jurasciix.vkapi.VKApi;
 import org.jurasciix.vkapi.VKMethod;

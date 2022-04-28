@@ -3,8 +3,11 @@ package org.jurasciix.vkapi;
 import com.google.gson.JsonElement;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
-import org.jurasciix.vkapi.object.BoolInt;
-import org.jurasciix.vkapi.object.Lang;
+import org.jurasciix.vkapi.exception.ApiException;
+import org.jurasciix.vkapi.exception.UncheckedApiException;
+import org.jurasciix.vkapi.model.Error;
+import org.jurasciix.vkapi.model.param.BoolInt;
+import org.jurasciix.vkapi.model.param.Lang;
 import org.jurasciix.vkapi.util.Request;
 
 import java.lang.reflect.Type;
@@ -18,6 +21,7 @@ public class VKMethod {
         T perform() throws ApiException;
     }
 
+    @Deprecated
     public interface Param {
 
         String value();
@@ -69,13 +73,13 @@ public class VKMethod {
             return action.perform();
         } catch (ApiException e) {
             if (e.getErrorCode() != API_ERROR_INTERNAL_SERVER_ERROR_CODE) {
-                throw new CheckedApiException(e.getError());
+                throw new UncheckedApiException(e.getError());
             }
         }
         try {
             return action.perform();
         } catch (ApiException e) {
-            throw new CheckedApiException(e.getError());
+            throw new UncheckedApiException(e.getError());
         }
     }
 
