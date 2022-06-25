@@ -3,6 +3,8 @@ package org.jurasciix.vklib4j.longPoll;
 import com.google.gson.JsonElement;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
+import org.jurasciix.vklib4j.api.model.longPoll.LongPollResult;
+import org.jurasciix.vklib4j.api.model.longPoll.LongPollServer;
 import org.jurasciix.vklib4j.exception.ApiException;
 import org.jurasciix.vklib4j.api.VKActor;
 import org.jurasciix.vklib4j.exception.LongPollServerException;

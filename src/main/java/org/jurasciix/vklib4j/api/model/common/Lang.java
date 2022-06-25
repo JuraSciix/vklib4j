@@ -1,4 +1,4 @@
-package org.jurasciix.vklib4j.api.model.param;
+package org.jurasciix.vklib4j.api.model.common;
 
 import org.jurasciix.vklib4j.api.VKMethod;
 

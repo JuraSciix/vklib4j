@@ -5,9 +5,9 @@ import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.jurasciix.vklib4j.exception.ApiException;
 import org.jurasciix.vklib4j.exception.UncheckedApiException;
-import org.jurasciix.vklib4j.api.model.Error;
-import org.jurasciix.vklib4j.api.model.param.BoolInt;
-import org.jurasciix.vklib4j.api.model.param.Lang;
+import org.jurasciix.vklib4j.api.model.common.Error;
+import org.jurasciix.vklib4j.api.model.common.BoolInt;
+import org.jurasciix.vklib4j.api.model.common.Lang;
 import org.jurasciix.vklib4j.util.Request;
 
 import java.lang.reflect.Type;

@@ -1,4 +1,4 @@
-package org.jurasciix.vklib4j.api.model.param;
+package org.jurasciix.vklib4j.api.model.common;
 
 import com.google.gson.annotations.SerializedName;
 import org.jurasciix.vklib4j.api.VKMethod;
