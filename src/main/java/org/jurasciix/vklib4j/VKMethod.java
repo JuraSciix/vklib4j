@@ -1,14 +1,14 @@
-package org.jurasciix.vkapi;
+package org.jurasciix.vklib4j;
 
 import com.google.gson.JsonElement;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
-import org.jurasciix.vkapi.exception.ApiException;
-import org.jurasciix.vkapi.exception.UncheckedApiException;
-import org.jurasciix.vkapi.model.Error;
-import org.jurasciix.vkapi.model.param.BoolInt;
-import org.jurasciix.vkapi.model.param.Lang;
-import org.jurasciix.vkapi.util.Request;
+import org.jurasciix.vklib4j.exception.ApiException;
+import org.jurasciix.vklib4j.exception.UncheckedApiException;
+import org.jurasciix.vklib4j.model.Error;
+import org.jurasciix.vklib4j.model.param.BoolInt;
+import org.jurasciix.vklib4j.model.param.Lang;
+import org.jurasciix.vklib4j.util.Request;
 
 import java.lang.reflect.Type;
 import java.util.*;

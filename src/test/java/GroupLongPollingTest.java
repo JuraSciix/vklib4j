@@ -1,13 +1,13 @@
 import com.google.gson.JsonObject;
-import org.jurasciix.vkapi.exception.ApiException;
-import org.jurasciix.vkapi.VKActor;
-import org.jurasciix.vkapi.VKApi;
-import org.jurasciix.vkapi.VKMethod;
-import org.jurasciix.vkapi.longpoll.GroupLongPolling;
-import org.jurasciix.vkapi.longpoll.LongPollServer;
-import org.jurasciix.vkapi.longpoll.LongPolling;
-import org.jurasciix.vkapi.util.GsonManager;
-import org.jurasciix.vkapi.util.HttpRequestFactory;
+import org.jurasciix.vklib4j.exception.ApiException;
+import org.jurasciix.vklib4j.VKActor;
+import org.jurasciix.vklib4j.VKApi;
+import org.jurasciix.vklib4j.VKMethod;
+import org.jurasciix.vklib4j.longpoll.GroupLongPolling;
+import org.jurasciix.vklib4j.longpoll.LongPollServer;
+import org.jurasciix.vklib4j.longpoll.LongPolling;
+import org.jurasciix.vklib4j.util.GsonManager;
+import org.jurasciix.vklib4j.util.HttpRequestFactory;
 
 public class GroupLongPollingTest {
 

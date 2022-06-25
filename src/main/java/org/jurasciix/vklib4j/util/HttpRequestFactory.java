@@ -1,4 +1,4 @@
-package org.jurasciix.vkapi.util;
+package org.jurasciix.vklib4j.util;
 
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.CookieSpecs;

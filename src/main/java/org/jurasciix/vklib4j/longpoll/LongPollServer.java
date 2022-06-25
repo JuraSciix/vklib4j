@@ -1,9 +1,9 @@
-package org.jurasciix.vkapi.longpoll;
+package org.jurasciix.vklib4j.longpoll;
 
 import com.google.gson.JsonElement;
 import com.google.gson.annotations.SerializedName;
-import org.jurasciix.vkapi.util.Request;
-import org.jurasciix.vkapi.util.RequestFactory;
+import org.jurasciix.vklib4j.util.Request;
+import org.jurasciix.vklib4j.util.RequestFactory;
 
 import java.net.URI;
 import java.util.Objects;

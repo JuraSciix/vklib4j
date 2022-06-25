@@ -1,12 +1,13 @@
-package org.jurasciix.vkapi.exception;
+package org.jurasciix.vklib4j.exception;
 
-import org.jurasciix.vkapi.model.Error;
+import org.jurasciix.vklib4j.model.Error;
 
-public class ApiException extends Exception {
+@Deprecated
+public class UncheckedApiException extends RuntimeException {
 
     private final Error error;
 
-    public ApiException(Error error) {
+    public UncheckedApiException(Error error) {
         this.error = error;
     }
 

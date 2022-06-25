@@ -1,8 +1,8 @@
-package org.jurasciix.vkapi;
+package org.jurasciix.vklib4j;
 
-import org.jurasciix.vkapi.util.JsonManager;
-import org.jurasciix.vkapi.util.Request;
-import org.jurasciix.vkapi.util.RequestFactory;
+import org.jurasciix.vklib4j.util.JsonManager;
+import org.jurasciix.vklib4j.util.Request;
+import org.jurasciix.vklib4j.util.RequestFactory;
 
 import java.util.Objects;
 

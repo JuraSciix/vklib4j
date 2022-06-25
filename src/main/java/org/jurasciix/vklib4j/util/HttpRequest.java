@@ -1,4 +1,4 @@
-package org.jurasciix.vkapi.util;
+package org.jurasciix.vklib4j.util;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.HttpStatus;

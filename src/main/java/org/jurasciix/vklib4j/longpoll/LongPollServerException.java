@@ -1,4 +1,4 @@
-package org.jurasciix.vkapi.longpoll;
+package org.jurasciix.vklib4j.longpoll;
 
 public class LongPollServerException extends Exception {
 

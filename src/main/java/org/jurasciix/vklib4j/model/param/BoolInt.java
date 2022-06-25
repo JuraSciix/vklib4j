@@ -1,7 +1,7 @@
-package org.jurasciix.vkapi.model.param;
+package org.jurasciix.vklib4j.model.param;
 
 import com.google.gson.annotations.SerializedName;
-import org.jurasciix.vkapi.VKMethod;
+import org.jurasciix.vklib4j.VKMethod;
 
 public enum BoolInt implements VKMethod.Param {
 
