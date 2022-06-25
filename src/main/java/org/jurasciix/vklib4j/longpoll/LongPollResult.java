@@ -1,4 +1,4 @@
-package org.jurasciix.vklib4j.longpoll;
+package org.jurasciix.vklib4j.longPoll;
 
 import com.google.gson.JsonArray;
 import com.google.gson.annotations.SerializedName;

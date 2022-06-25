@@ -1,4 +1,4 @@
-package org.jurasciix.vklib4j;
+package org.jurasciix.vklib4j.api;
 
 import org.jurasciix.vklib4j.util.JsonManager;
 import org.jurasciix.vklib4j.util.Request;

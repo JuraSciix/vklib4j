@@ -1,6 +1,6 @@
-package org.jurasciix.vklib4j.model.param;
+package org.jurasciix.vklib4j.api.model.param;
 
-import org.jurasciix.vklib4j.VKMethod;
+import org.jurasciix.vklib4j.api.VKMethod;
 
 public enum Lang implements VKMethod.Param {
 

@@ -1,4 +1,4 @@
-package org.jurasciix.vklib4j;
+package org.jurasciix.vklib4j.api;
 
 import java.util.NoSuchElementException;
 import java.util.Objects;

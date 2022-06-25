@@ -1,7 +1,7 @@
 import org.jurasciix.vklib4j.exception.ApiException;
-import org.jurasciix.vklib4j.VKActor;
-import org.jurasciix.vklib4j.VKApi;
-import org.jurasciix.vklib4j.VKMethod;
+import org.jurasciix.vklib4j.api.VKActor;
+import org.jurasciix.vklib4j.api.VKApi;
+import org.jurasciix.vklib4j.api.VKMethod;
 import org.jurasciix.vklib4j.util.GsonManager;
 import org.jurasciix.vklib4j.util.HttpRequestFactory;
 

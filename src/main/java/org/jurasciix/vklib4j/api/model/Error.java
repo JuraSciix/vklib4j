@@ -1,4 +1,4 @@
-package org.jurasciix.vklib4j.model;
+package org.jurasciix.vklib4j.api.model;
 
 import com.google.gson.annotations.SerializedName;
 import lombok.Data;

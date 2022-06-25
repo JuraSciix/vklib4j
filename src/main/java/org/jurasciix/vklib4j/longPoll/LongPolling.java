@@ -1,10 +1,11 @@
-package org.jurasciix.vklib4j.longpoll;
+package org.jurasciix.vklib4j.longPoll;
 
 import com.google.gson.JsonElement;
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.jurasciix.vklib4j.exception.ApiException;
-import org.jurasciix.vklib4j.VKActor;
+import org.jurasciix.vklib4j.api.VKActor;
+import org.jurasciix.vklib4j.exception.LongPollServerException;
 import org.jurasciix.vklib4j.util.Request;
 import org.jurasciix.vklib4j.util.RequestException;
 

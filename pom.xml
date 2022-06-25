@@ -6,7 +6,7 @@
 
     <groupId>org.jurasciix.vklib4j</groupId>
     <artifactId>vklib4j</artifactId>
-    <version>1.3.1-beta</version>
+    <version>1.3.1-SNAPSHOT</version>
 
     <name>VKLib4j</name>
     <description>A lightweight library for working with the VK API.</description>

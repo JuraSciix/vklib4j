@@ -1,7 +1,8 @@
-package org.jurasciix.vklib4j.longpoll;
+package org.jurasciix.vklib4j.longPoll;
 
 import com.google.gson.JsonElement;
 import com.google.gson.annotations.SerializedName;
+import org.jurasciix.vklib4j.exception.LongPollServerException;
 import org.jurasciix.vklib4j.util.Request;
 import org.jurasciix.vklib4j.util.RequestFactory;
 
